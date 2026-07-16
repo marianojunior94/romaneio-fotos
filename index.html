@@ -220,11 +220,21 @@
 /* =========================================================
    CONFIGURAÇÃO DO ACERVO DE FOTOS
    Padrão do link:  BASE + REFERENCIA_COR-SEQUENCIA.jpg
-   Ex.: https://.../fotos/F500_207-1.jpg (ref F500, cor 207, foto 1)
+   Ex.: .../F500_207-1.jpg (ref F500, cor 207, foto 1)
    O app testa a sequência 1, 2, 3… e para na primeira que
    não existir. MAX_SEQ é só um teto de segurança.
+
+   São DOIS servidores com as MESMAS fotos:
+   - VER: hospedagem Locaweb — rápida e com cache, usada para
+     conferir se a foto existe e para mostrar na tela.
+     (é o mesmo servidor de artstilorevenda1.hospedagemdesites.ws,
+     pelo apelido websiteseguro.com, que tem cadeado https válido)
+   - BAIXAR: o e-commerce no Railway — único que permite ao site
+     baixar os arquivos (CORS liberado na rota /fotos), usado no
+     zip, no "Salvar na galeria" e no botão Baixar.
    ========================================================= */
-const FOTO_BASE = "https://artstilo-ecommerce-production.up.railway.app/fotos/";
+const FOTO_BASE_VER    = "https://artstilorevenda1.websiteseguro.com/fotosartstilo/";
+const FOTO_BASE_BAIXAR = "https://artstilo-ecommerce-production.up.railway.app/fotos/";
 const FOTO_EXT  = ".jpg";
 const MAX_SEQ   = 30;   // teto de fotos por produto
 const COR_DIGITOS = 3;  // cor numérica com zeros à esquerda (207, 002)
@@ -267,7 +277,9 @@ function coresPorNome(txt){
    texto ART/STILO desenhado. Deixe "" para usar o texto.   */
 const LOGO_URL = "";
 
-function fotoUrl(ref, cor, seq){ return FOTO_BASE + ref + "_" + cor + "-" + seq + FOTO_EXT; }
+function fotoUrl(ref, cor, seq){ return FOTO_BASE_VER + ref + "_" + cor + "-" + seq + FOTO_EXT; }
+/* mesmo arquivo, no servidor que permite download */
+function urlParaBaixar(url){ return FOTO_BASE_BAIXAR + url.split("/").pop(); }
 
 /* ---------- Marca ART/STILO (texto no estilo do logo oficial) ----------
    O número em data-logo é o tamanho da letra; com LOGO_URL,
@@ -493,15 +505,27 @@ function escolherCandidatos(produtos){
 /* =========================================================
    3) SONDAR O ACERVO: quais sequências existem?
    Testa 1,2,3… e PARA na primeira que não existir.
+   Uma falha pode ser só oscilação da internet ou engasgo do
+   servidor — por isso tenta ATÉ 3 VEZES antes de considerar
+   que a foto não existe (nas repetições, acrescenta ?r= para
+   não reaproveitar a falha guardada no cache).
    ========================================================= */
-function probeImage(url){
+function probeOnce(url, timeoutMs){
   return new Promise(res=>{
     const im = new Image();
-    const timer = setTimeout(()=>{ im.src=""; res(false); }, 15000);
+    const timer = setTimeout(()=>{ im.src=""; res(false); }, timeoutMs);
     im.onload  = ()=>{ clearTimeout(timer); res(true);  };
     im.onerror = ()=>{ clearTimeout(timer); res(false); };
     im.src = url;
   });
+}
+async function probeImage(url){
+  if(await probeOnce(url, 15000)) return true;
+  for(let t=1; t<=2; t++){
+    await new Promise(r=>setTimeout(r, 500*t));
+    if(await probeOnce(url+"?r="+t, 10000)) return true;
+  }
+  return false;
 }
 
 async function discoverFotos(pares, onStep){
@@ -525,7 +549,7 @@ async function discoverFotos(pares, onStep){
    4) DOWNLOAD / SALVAR NA GALERIA
    ========================================================= */
 async function fetchBlob(url){
-  const res = await fetch(url,{mode:"cors"});
+  const res = await fetch(urlParaBaixar(url),{mode:"cors"});
   if(!res.ok) throw new Error("HTTP "+res.status);
   return await res.blob();
 }
@@ -559,6 +583,7 @@ function bindGalleryButton(btn, getUrls){
                    : "Toque para salvar "+lotes[0].length+" foto(s)";
   };
   const encerrar = ()=>{ lotes=null; total=0; btn.textContent=label; };
+  btn._resetGaleria = encerrar;   // nova busca descarta partes antigas
 
   /* envia a próxima parte ao menu de compartilhar */
   async function compartilhar(){
@@ -666,6 +691,8 @@ function renderResults(produtos, textoLido){
   const comFoto  = produtos.filter(p=>p.fotos.length>0);
   const semFoto  = produtos.filter(p=>p.fotos.length===0);
   lastProducts = comFoto;
+  const sg = $("#saveAllGallery");
+  if(sg && sg._resetGaleria) sg._resetGaleria();   // esquece fotos preparadas da busca anterior
   const shareOk = canShareFiles();
 
   const totalFotos = comFoto.reduce((s,p)=>s+p.fotos.length,0);
@@ -679,7 +706,8 @@ function renderResults(produtos, textoLido){
     grid.innerHTML=`<div class="empty" style="grid-column:1/-1">
       <div class="ic">&#128533;</div>
       <b>Nenhuma foto foi encontrada no acervo para este romaneio.</b>
-      <p style="margin-top:6px;max-width:440px;margin-inline:auto">Confira se a foto do romaneio está nítida, ou digite os códigos manualmente na tela anterior (ex.: F500 207).</p>
+      <p style="margin-top:6px;max-width:440px;margin-inline:auto">Confira se a foto do romaneio está nítida, ou digite os códigos manualmente na tela anterior (ex.: F500 207 ou F500 preto).</p>
+      <p style="margin-top:10px;max-width:440px;margin-inline:auto">Se as fotos apareceram numa busca anterior, pode ter sido só uma <b>instabilidade da internet</b> — toque em "Enviar outro" e tente de novo.</p>
     </div>`;
   }else{
     comFoto.forEach(prod=>{

@@ -20,15 +20,31 @@ Um app web de **um único arquivo** (`index.html`, sem backend) para as revended
 
 ## Padrão dos links das fotos (regra central)
 
+Nome do arquivo: `{REFERENCIA}_{COR}-{SEQ}.jpg` — ex.: `F500_207-1.jpg`, `B074C_337-2.jpg`,
+`F518_A07-1.jpg`. DOIS servidores com as MESMAS fotos (decisão de 16/07/2026, a pedido
+do dono, para tirar peso do e-commerce):
+
 ```
-https://artstilo-ecommerce-production.up.railway.app/fotos/{REFERENCIA}_{COR}-{SEQ}.jpg
+VER (sondar/exibir):  https://artstilorevenda1.websiteseguro.com/fotosartstilo/{ARQUIVO}
+BAIXAR (zip/galeria): https://artstilo-ecommerce-production.up.railway.app/fotos/{ARQUIVO}
 ```
-Exemplos reais: `F500_207-1.jpg`, `B074C_337-2.jpg`, `F518_A07-1.jpg`
+- O servidor de VER é a hospedagem Locaweb `artstilorevenda1.hospedagemdesites.ws`
+  acessada pelo apelido `websiteseguro.com` — é o MESMO servidor, mas só o apelido tem
+  certificado https válido (o app roda em https e o navegador bloquearia http).
+  Rápido (~0,4s, cache de borda), 404 em ~0,2s, MAS SEM CORS → o site não consegue
+  baixar arquivos de lá (só exibir).
+- O servidor de BAIXAR é o e-commerce no Railway, único com CORS liberado em /fotos.
+  A função urlParaBaixar() converte o link de um servidor para o outro pelo nome
+  do arquivo. Se um dia a Locaweb ganhar CORS (ex.: .htaccess com
+  Header set Access-Control-Allow-Origin "*"), dá para baixar tudo de lá também.
 - Referência: letras + números + letras opcionais (F500, B074C, B461)
 - Cor: 3 dígitos com zeros à esquerda (207, 002) OU letra + dígitos (A07)
 - SEQ: 1, 2, 3… até a primeira que não existir (teto MAX_SEQ=30)
-- Constantes no topo do `<script>` em index.html: FOTO_BASE, FOTO_EXT, MAX_SEQ,
-  COR_DIGITOS, LOGO_URL
+- Sondagem (probeImage): tenta até 3x por foto (falha pode ser rede instável;
+  repetições usam ?r=N para furar o cache). Motivo: em 16/07/2026 uma busca repetida
+  no celular voltou vazia por instabilidade momentânea.
+- Constantes no topo do `<script>` em index.html: FOTO_BASE_VER, FOTO_BASE_BAIXAR,
+  FOTO_EXT, MAX_SEQ, COR_DIGITOS, LOGO_URL, LOTE_MAX
 
 ## Layouts de romaneio conhecidos (função extractPairs)
 
@@ -63,6 +79,10 @@ Exemplos reais: `F500_207-1.jpg`, `B074C_337-2.jpg`, `F518_A07-1.jpg`
 - [x] Decisão do dono (16/07/2026): manter como serviço SEPARADO no Railway, para não
       trazer risco ao e-commerce. NÃO integrar na rota /romaneio do e-commerce.
 - [ ] Testar no celular real: botões dourados "Salvar na galeria" (Web Share API) e o zip.
+- [x] Acervo em dois servidores (16/07/2026): ver/sondar na Locaweb (rápido), baixar no
+      e-commerce (CORS). Sondagem com 3 tentativas contra instabilidade de rede; tela
+      vazia agora sugere tentar de novo; botão da galeria descarta partes de busca
+      anterior. Ver seção "Padrão dos links das fotos".
 - [x] Salvar na galeria em PARTES (16/07/2026): se o celular recusar muitas fotos de uma
       vez, o app divide em lotes (LOTE_MAX=24, encolhe até o navigator.canShare aceitar)
       e pede um toque por parte ("Toque p/ salvar — parte 2 de 4"). Antes ele desistia e
