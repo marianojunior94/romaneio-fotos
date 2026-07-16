@@ -63,12 +63,29 @@ Exemplos reais: `F500_207-1.jpg`, `B074C_337-2.jpg`, `F518_A07-1.jpg`
 - [x] Decisão do dono (16/07/2026): manter como serviço SEPARADO no Railway, para não
       trazer risco ao e-commerce. NÃO integrar na rota /romaneio do e-commerce.
 - [ ] Testar no celular real: botões dourados "Salvar na galeria" (Web Share API) e o zip.
-- [ ] Logo oficial: quando o dono mandar o arquivo, colocar a URL na constante LOGO_URL
-      (hoje usa um emblema SVG desenhado: sol, onda e areia).
+- [x] Salvar na galeria em PARTES (16/07/2026): se o celular recusar muitas fotos de uma
+      vez, o app divide em lotes (LOTE_MAX=24, encolhe até o navigator.canShare aceitar)
+      e pede um toque por parte ("Toque p/ salvar — parte 2 de 4"). Antes ele desistia e
+      mandava salvar por produto. Obs.: site NÃO consegue gravar direto na fototeca sem
+      toque do usuário (regra do iPhone/Android) — o menu de compartilhar é o caminho.
+      Testado em 16/07/2026 simulando: celular sem limite (1 envio), com limite de 4
+      (4 partes guiadas) e iPhone exigindo gesto direto (2º toque).
+- [x] Logo da marca (16/07/2026): o dono mandou a imagem oficial (ART/STILO ® + slogan
+      "O que te move.", creme sobre petróleo escuro). Reproduzida como TEXTO estilizado
+      (classe .brandmark, Poppins 300 espaçada) — sem arquivo externo. A constante
+      LOGO_URL segue disponível caso queira usar um arquivo de imagem no futuro.
+- [x] Busca por NOME da cor (16/07/2026): tabela da planilha Cores.xlsx da fábrica
+      embutida no index.html (const CORES, 1.266 cores; INATIVO/NAO USAR excluídas).
+      A revendedora pode digitar "F500 preto" além de "F500 207". Nomes com mais de
+      um código (ex.: PRETO = 002 e 0002) viram um "grupo" de candidatos e só ficam
+      os códigos com foto no acervo (funções parseManual/escolherCandidatos).
+      Os cartões e a lista "sem foto" mostram o nome da cor (nomeDaCor).
+      Testado ao vivo em 16/07/2026: "F500 moscou"→207, "F518 bronzeada com marfim"→A07,
+      "F500 preto"→002 (0002 descartado por não ter foto). OCR re-testado nos 2 layouts.
 
 ## Decisões de design
 
-- Marca: ART STILO · Praia & Fitness (nome como aparece em revendaartstilo.com.br).
+- Marca: ART/STILO ® — slogan "O que te move." (logo oficial recebida em 16/07/2026).
 - Paleta: petróleo #0a5f68 / oceano #0e8691 / turquesa #15b5c2 / coral #ff6f5e /
   dourado #ffd166 / areia #faf3e7. Fonte Poppins. Botões arredondados (pill).
 - Tudo processado no navegador da revendedora; nenhum dado sai do aparelho

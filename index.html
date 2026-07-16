@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Art Stilo — Fotos pelo Romaneio</title>
-<meta name="theme-color" content="#0a5f68">
+<title>ART/STILO — Fotos pelo Romaneio</title>
+<meta name="theme-color" content="#04333c">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.1.1/tesseract.min.js"></script>
@@ -33,16 +33,18 @@
 
   /* ---------- Topbar ---------- */
   header.topbar{
-    background:linear-gradient(135deg,var(--ocean-dark) 0%, var(--ocean) 55%, var(--turq) 100%);
+    background:linear-gradient(140deg,#032e37 0%, var(--ocean-dark) 55%, var(--ocean) 100%);
     position:sticky;top:0;z-index:10;box-shadow:0 4px 18px rgba(10,95,104,.25);
   }
-  .topbar-inner{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 0}
+  .topbar-inner{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0}
   .brand-row{display:flex;align-items:center;gap:12px}
   .logo-slot{display:flex;align-items:center;justify-content:center}
-  .logo-slot img,.logo-slot svg{display:block;border-radius:12px}
-  .brand-row .bname{color:#fff;line-height:1.15}
-  .brand-row .bname b{font-size:17px;font-weight:700;letter-spacing:.5px;display:block}
-  .brand-row .bname small{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.85)}
+  .logo-slot img{display:block}
+  /* ---------- Marca ART/STILO (texto no estilo do logo) ---------- */
+  .brandmark{display:inline-flex;flex-direction:column;line-height:1}
+  .brandmark .wm{font-weight:300;letter-spacing:.16em;color:#f7f0e2;white-space:nowrap}
+  .brandmark .wm .rr{font-size:.36em;vertical-align:.95em;letter-spacing:0;margin-left:.35em}
+  .brandmark .wm-slogan{margin-top:.5em;font-size:.46em;letter-spacing:.14em;color:#7fd0c0;font-weight:500}
   .btn{cursor:pointer;border:none;border-radius:999px;font-size:15px;font-weight:600;
     font-family:inherit;padding:13px 20px;transition:transform .05s,box-shadow .2s,background .2s,filter .2s}
   .btn:active{transform:translateY(1px)}
@@ -62,13 +64,14 @@
   #uploadView{min-height:calc(100vh - 70px);display:flex;align-items:center;justify-content:center;padding:32px 20px}
   .panel{width:100%;max-width:560px;background:var(--white);border-radius:22px;box-shadow:var(--shadow);padding:0 0 30px;border:1px solid var(--line);text-align:center;overflow:hidden}
   .panel .hero{
-    background:linear-gradient(135deg,var(--ocean-dark) 0%, var(--ocean) 55%, var(--turq) 100%);
+    background:linear-gradient(140deg,#032e37 0%, var(--ocean-dark) 55%, var(--ocean) 100%);
     padding:30px 30px 8px;position:relative;color:#fff;
   }
-  .panel .hero .logo-slot{justify-content:center;margin-bottom:10px}
+  .panel .hero .logo-slot{justify-content:center;margin-bottom:14px}
+  .panel .hero .brandmark{align-items:center}
   .panel .hero h1{font-size:22px;font-weight:700;letter-spacing:.3px}
   .panel .hero .tagline{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.85);margin-top:2px}
-  .panel .wave{display:block;margin-top:-1px;background:linear-gradient(135deg,var(--ocean-dark) 0%, var(--ocean) 55%, var(--turq) 100%)}
+  .panel .wave{display:block;margin-top:-1px;background:linear-gradient(140deg,#032e37 0%, var(--ocean-dark) 55%, var(--ocean) 100%)}
   .panel .inner{padding:8px 30px 0}
   .panel p.lead{color:var(--muted);font-size:14px;line-height:1.55;margin:10px 0 20px}
   .drop{border:2px dashed #a8d4da;border-radius:16px;background:#f4fbfc;padding:30px 20px;cursor:pointer;transition:border-color .2s,background .2s;display:block}
@@ -141,8 +144,7 @@
 <header class="topbar">
   <div class="wrap topbar-inner">
     <div class="brand-row">
-      <span class="logo-slot" data-logo="44"></span>
-      <div class="bname"><b>ART STILO</b><small>Praia &amp; Fitness</small></div>
+      <span class="logo-slot" data-logo="19"></span>
     </div>
     <button class="btn btn-ghost" id="restartBtn" style="display:none">Enviar outro</button>
   </div>
@@ -152,9 +154,9 @@
 <section id="uploadView">
   <div class="panel">
     <div class="hero">
-      <span class="logo-slot" data-logo="74"></span>
+      <span class="logo-slot" data-logo="28"></span>
       <h1>Fotos dos seus produtos</h1>
-      <div class="tagline">Praia &amp; Fitness · Área da Revendedora</div>
+      <div class="tagline">Área da Revendedora</div>
     </div>
     <svg class="wave" viewBox="0 0 560 30" preserveAspectRatio="none" style="width:100%;height:30px">
       <path d="M0,12 C90,32 180,-6 280,12 C380,30 470,-4 560,14 L560,30 L0,30 Z" fill="#ffffff"></path>
@@ -175,9 +177,9 @@
         <button class="btn btn-primary" id="processBtn" disabled>Ler romaneio e buscar fotos</button>
       </div>
 
-      <div class="sep">ou digite os códigos manualmente</div>
+      <div class="sep">ou digite a referência + cor (código ou nome)</div>
       <div class="manual">
-        <input id="manualInput" placeholder="Ex.: F500 207, F518 A07" autocomplete="off" spellcheck="false">
+        <input id="manualInput" placeholder="Ex.: F500 207 ou F500 preto" autocomplete="off" spellcheck="false">
         <button class="btn btn-primary" id="manualBtn" style="padding:12px 18px">Buscar</button>
       </div>
 
@@ -209,7 +211,7 @@
     <div class="grid" id="grid"></div>
     <div class="readbox" id="readBox"></div>
   </div>
-  <footer><b>ART STILO</b> · Praia &amp; Fitness — Fotos em alta qualidade dos produtos do seu romaneio.</footer>
+  <footer><b>ART/STILO</b> · O que te move. — Fotos em alta qualidade dos produtos do seu romaneio.</footer>
 </section>
 
 <div class="toast" id="toast"></div>
@@ -227,30 +229,58 @@ const FOTO_EXT  = ".jpg";
 const MAX_SEQ   = 30;   // teto de fotos por produto
 const COR_DIGITOS = 3;  // cor numérica com zeros à esquerda (207, 002)
 
+/* =========================================================
+   TABELA DE CORES (código -> nome), vinda da planilha
+   Cores.xlsx da fábrica. Permite digitar o NOME da cor
+   ("F500 preto") em vez do código, e mostra o nome nos
+   cartões. Cores INATIVO/NAO USAR ficaram de fora.
+   ========================================================= */
+const CORES = {"000":"UNICA","0000":"UNICA","0002":"PRETO","0003":"TAHITI MP","0004":"PINK MP","0005":"RUBI","0006":"CHOCOLATE","0007":"MARFIM","0008":"BIC","0009":"EXTREME","001":"BRANCO","0010":"LAS VEGAS","0011":"MALDIVAS","0012":"FRASH GREEN","0013":"BOMBASTIC","0014":"SIDERAL","0015":"BASE","0016":"SENSUALY","0017":"CORAL","0018":"PRETO MEXICALE","0019":"CHAMPANHE","002":"PRETO","0020":"PRETO GRITER","0021":"ROSA BEBE","0022":"MESCLA","0023":"GELATINA R","0024":"GRAFITO","0025":"SUNFLAWER","0026":"POLEGREEN","0027":"DIVINO","0028":"AMARELO CAMARO","0029":"LIME","003":"SIDERAL","0030":"TOFFE","0031":"LOLLIOPOP","0032":"MADONNA","0033":"VIENA","0034":"FRESH","0035":"ORVALHO","0036":"AMARELO SUNKISS","0037":"PONKAN","0038":"GOA","0039":"CANOA","004":"TAHITI","0040":"MANACA","0041":"CACTO","0042":"DENIN","0043":"MARBELLA","0044":"ORION","0045":"SHARK","0046":"BRANCO MEXICALE","0047":"GLAN","0048":"CHIFON","0049":"TRANSPARENTE","005":"PINK","0050":"IMPERIAL","0051":"DAFNE","0052":"CASTANHO","0053":"WHITI","0054":"VERDE MAY","0055":"PINK 2","0056":"PRETO COM BRANCO","0057":"JAIPUR","0058":"SATIN","0059":"ROSEWOOD","006":"GRAFITO/ACRÓPOLE","0060":"NEVOA","0061":"AZUL BEBE","0062":"BOMBONIER (OLD ROSE)","0063":"DELICIUS","0064":"DESEJO","0065":"DOURADO","0066":"CINZA","0067":"LIMONADA","0068":"CIRRE PRETO","0069":"SIDERAL C/ BRANCO","007":"RUBI","0070":"BRANCO COM PRETO","0071":"DESEJO C/ PRETO","0072":"VERDE MILITAR","0073":"DESEJO COM NEVOA","0074":"SUSY","0075":"MANACA GRITTER","0076":"MILITAR GRITTER","0077":"PRETO GRITTER","0078":"MARROM","0079":"ROSEWOOD/PRETO","008":"CHOCOLATE","0080":"ROSA ERA","0081":"LILAS","0082":"MARESIA","0083":"FLORA","0084":"VERDE PINHO","009":"ESTAMP.009","010":"POLEGREEN","011":"DIVINO","012":"MARFIM","013":"BIC","014":"AMARELO CAMARO","015":"MOSTARDA","016":"ESTAMP.016","017":"EXTREME","0171":"TERRA","018":"PRETO COM AGAVE","019":"LOLLIOPOP/ ALLEGRA","020":"TAHITI MESCLA","021":"PRETO COM FLORENÇA","022":"FRESH","023":"ORVALHO","024":"AMARELO SUNKISS","025":"PONKAN","026":"MALDIVAS","027":"GOA","028":"CANOA","029":"MANACA","030":"PINK COM FRAIS","0300":"ESTELA","031":"CROMO COM BIC","032":"FRESH GREEN","033":"BOMBASTIC","034":"GELATINA","035":"MARBELLA","036":"PRETO/BIC/CINZA","037":"CORAL","038":"PRETO/FRAIS/PINK","040":"GLAN","041":"CHICLETE/AZUL BEBE/FRAIS","042":"BASE (PETALA)","043":"SENSUALY","044":"CHICLETE/FRAIS/ZOUK","045":"ESTAMP.045","046":"AÇO/PINK/ZOUK COM BRILHO","047":"ROSA BEBE","048":"MESCLA","049":"PRETO/PRETO COM BRILHO/BRANCO","050":"SIDERAL/CORAL COM BRILHO/CINZA","051":"AGAVE","052":"SIDERAL/PINK/CROMO","053":"PLATINE","054":"PRETO/AÇO/CORAL COM BRILHO","055":"CINZA COM BRILHO","056":"FRAIS COM BRILHO","057":"PRETO COM RUBI","058":"SAINT TROPEZ COM BRILHO","059":"CORAL/ZOUK/SAINT TROPEZ","060":"ESTAMP.009 COM SIDERAL","061":"AÇO/PINK/MARBELA","062":"SIDERAL/ZOUK/CINZA","063":"PRETO/BIC/PLATINE","064":"ESTAMP.064","065":"ESTAMP.065","066":"ROSEWOOD","067":"MESCLA/PRETO/ORANGE FRESH","068":"AZUL BEBE","069":"LIQUOR","070":"PRINCESA (CALLAS)","071":"DESEJO","072":"PRETO/EXTREME/LILAS","073":"SIDERAL/FRAIS/CROMO","074":"PRETO COM SENSUALY","075":"PRETO/RUBI/CROMO","076":"PRETO COM GRAFITO","077":"SIDERAL/LILAS/EXTREME","078":"DOURADO","079":"PRETO/SAINT TROPEZ/CROMO","080":"CINZA / CROMO","081":"SAFIRA","082":"DIVINO/CROMO/PRETO","083":"BIC/CROMO/ORANGE FRESH","084":"LILAS","085":"ATALAIA/CROMO/ORANGE FRESH","086":"ESTAMP.086","087":"ESTAMP.087","088":"ESTAMP.088","089":"FRAIS(MARESIA)","090":"ESTAMP.090","091":"ESTAMP.091","092":"BRANCO/PRETO","093":"ESTAMP.093","094":"MESCLA COM PRETO","095":"BRANCO COM BRILHO","096":"SIDERAL/MALDIVAS","097":"PRETO PRATEADO","098":"CINZA PRATEADO","099":"BRANCO AFRICA","100":"SERENO","101":"PRETO C/ FRESH GREEN","102":"PRETO COM EXTREME","103":"ESTAMP. 103","104":"PRETO C/ MESCLA","105":"MALDIVAS/SIDERAL/GRAFITO","106":"ESTAMP. 106","107":"ESTAMP. 107","108":"ESTAMP. 108","109":"ESTAMP. 109","110":"ESTAMP. 110","111":"ESTAMP. 111","112":"ESTAMP. 112","113":"ESTAMP. 113","114":"ZOUK/PRETO/CROMO","115":"ESTAMP. 115","116":"ESTAMP. 116","117":"ESTAMP. 117","118":"ESTAMP. 118","119":"ESTAMP. 119","120":"ESTAMP. 120","121":"ESTAMP. 121","122":"ESTAMP. 122","123":"ESTAMP. 123","124":"ESTAMP. 124","125":"ESTAMP. 125","126":"ESTAMP. 126","127":"PRETO/DESEJO/CINZA COM BRILHO","128":"CROMO/ZOUK COM BRILHO/FRAIS COM BRILHO","129":"ESTAMP. 129","130":"ESTAMP. 130","131":"ESTAMP. 131","132":"PRETO/AGAVE/CINZA COM BRILHO","133":"VERDE MILITAR MESCLA","134":"ESTAMP. 134","135":"GRAFITO/CROMO/FRAIS","136":"PRETO/SIDERAL/CORAL","137":"VERDE MILITAR/CROMO/MANACA","138":"ESTAMP. 138","139":"FLORENÇA MESCLA","140":"ESTAMP. 140","141":"PRETO/LILAS/PAPRIKA","142":"ESTAMP. 142","143":"ESTAMP. 143","144":"GRAFITO COM FRESH GREEN","145":"SIDERAL COM MARBELA","146":"ESTAMP. 146","147":"ESTAMP. 147","148":"PRETO COM GALAXIA","149":"LIQUOR/AGAVE/CROMO","150":"PRETO/OLD ROSE/CROMO","151":"ESTAMP. 151","152":"ESTAMP. 152","153":"ESTAMP. 153","154":"GRAFITO PRATEADO","155":"PLATINE/PRETO/BRANCO","156":"CARBOX","157":"ESTAMP. 157","158":"ESTAMP. 158","159":"ESTAMP. 159","160":"CAFE","161":"ESTAMP. 161","162":"ESTAMP. 162","163":"ESTAMP.163","164":"ESTAMP.164","165":"165 ONÇA MARROM","166":"166 ONÇA AZUL","167":"ESTAMP.167","168":"ESTAMP.168","169":"ESTAMP.169","170":"170 ARARA/ROSE","171":"ESTAMP.171","172":"172 COQUEIRO/BRAN","173":"ESTAMP.173","174":"ESTAMP.174","175":"ESTAMP.175","176":"ESTAMP.176","177":"ONÇA","178":"ESTAMP.178","179":"ESTAMP.179","180":"ESTAMP.180","181":"181 CHEVRON ORVA","182":"182 CHEVRON ROSA","183":"183 CHEVRON LARAN","184":"ESTAMP.184","185":"BIC MESCLA","186":"GRAFITO MESCLA","187":"ESTAMP.187","188":"BIC COM FRAIS","189":"VERDE MILITAR COM PRETO","190":"CARBOX COM FRAIS","191":"FRAIS COM LILAS","192":"MANACA COM LILAS","193":"CARBOX COM PAPRIKA","194":"SIDERAL/ROSA BEBE/FRAIS","195":"129/128","196":"132/133","197":"993/991","198":"131/130","199":"143/134","200":"125/126","201":"CORAL/LIQUOR/MACA VERDE","202":"SIDERAL/EST.161/ZOUK","203":"GRAFITO/ZOUK/PINK","204":"PRETO/EST.161/ATALAIA","205":"VERDE MILITAR/CROMO/PRETO","206":"ESTAMP. 206","207":"MOSCOU","208":"134/142","209":"163/164","210":"MADONA","211":"ESTAMP. 211","212":"SIDERAL/DESEJO/VERDE MILITAR","213":"ATALAIA/CROMO/FRAIS","214":"PRETO/PONKAN/CROMO","215":"SIDERAL COM DESEJO","216":"FLORA/LISTRA","217":"ATALAIA COM CROMO","218":"SALVIA","219":"BIC PRATEADO","220":"RUBI PRATEADO","221":"GRAFITO COM FRAIS","222":"ORVALHO COM FRESH GREEN","223":"ESTAMP. 223","224":"ESTAMP. 224","225":"ESTAMP. 225","226":"ESTAMP.226","227":"ESTAMP. 227","228":"ESTAMP.228","229":"ESTAMP. 229","230":"ESTAMP. 230","231":"ESTAMP. 231","232":"PINK POP","233":"ESTAMP. 233","234":"ESTAMP. 234","235":"ESTAMP. 235","236":"ESTAMP. 236","237":"ESTAMP. 237","238":"ESTAMP. 238","239":"ESTAMP. 239","240":"SEMENTE DE UVA","241":"ESTAMP.241","242":"ESTAMP.242","243":"ESTAMP.243","244":"ESTAMP.244","245":"ESTAMP. 245","246":"ESTAMP.246","247":"VERDE MILITAR/PRETO/CROMO","248":"EXPANSAO","249":"GRAFITO/FRAIS/PONKAN","250":"SIDERAL COM SAINT TROPEZ","251":"STAR WARS COM BOMBASTIC","252":"FLORENÇA/AREIA/ORVALHO","253":"FLORENCA COM AREIA","254":"SIDERAL/CROMO/PONKAN","255":"COBRE PRATEADO","256":"CHUMBO PRATEADO","257":"CROMO REFLETIVO","258":"MARBELLA C/ ORION","259":"ESTAMP. 259","260":"ESTAMP.260","261":"ESTAMP.261","262":"234/235","263":"237/238","264":"ESTAMP. 264","265":"ESTAMP. 265","266":"DIVINO MESCLA","267":"OLD ROSE MESCLA","268":"TAHITI/PONKAN","268B":"TAHITI/GELATINA","269":"ESTAMP.269","270":"ESTAMP.270","271":"PINK/TAHITI","272":"ESTAMP. 272","273":"OURO CLARO (ROSA)","274":"ESTAMP. 274","275":"ESTAMP. 275","276":"ESTAMP. 276","277":"ESTAMP.277","278":"ESTAMP.278","279":"ESTAMP.279","280":"STAR WARS COM ORANGE FRESH","281":"ESTAMP.281","282":"ESTAMP.282","283":"ESTAMP.283","284":"ESTAMP. 284","285":"ESTAMP. 285","286":"BIRGAMO","287":"ESTAMP. 287","288":"SIDERAL/CROMO/GOA","289":"ROSEWOOD/ORANGE FRESH/ORVALHO","290":"ESTAMP. 290","291":"ESTAMP. 291","292":"ESTAMP. 292","293":"ESTAMP. 293","294":"ESTAMP. 294","295":"BIC/FRAIS/FRESH GREEN","296":"ESTAMP. 296","297":"CINZA CLARO","298":"ESTAMP. 298","299":"HORTENSIA","300":"ESTAMP.300","301":"ESTAMP. 301","302":"ESTAMP. 302","303":"ESTAMP. 303","304":"ESTAMP. 304","305":"ESTAMP. 305","306":"ESTAMP. 306","307":"BOMBASTIC COM EXTREME","308":"ESTAMP. 308","309":"PETROLEO","310":"ESTAMP. 310","311":"ESTAMP. 311","312":"ESTAMP. 312","313":"ESTAMP. 313","314":"ESTAMP. 314","315":"PONKAN COM PINK","316":"ESTAMP. 316","317":"ESTAMP. 317","318":"ROSEWOOD COM ORVALHO","319":"ESTAMP.319","320":"ESTAMP.320","321":"CIAN","322":"ATALAIA MESCLA","323":"ATALAIA/CROMO/FRESH GREEN","324":"JURERE","325":"ESTAMP. 325","326":"ESTAMP. 326","327":"ESTAMP. 327","328":"ESTAMP. 328","329":"ESTAMP. 329","330":"ESTAMP.330","331":"ESTAMP.331","332":"ESTAMP.332","333":"ESTAMP.333","334":"ESTAMP.334","335":"ESTAMP.335","336":"ESTAMP. 336","337":"ESTAMP. 337","338":"ESTAMP. 338","339":"ESTAMP. 339","340":"ESTAMP. 340","341":"ESTAMP. 341","342":"ESTAMP. 342","343":"ESTAMP. 343","344":"ESTAMP. 344","345":"ESTAMP. 345","346":"ESTAMP. 346","347":"ESTAMP. 347","348":"ESTAMP. 348","349":"ESTAMP. 349","350":"ESTAMP. 350","351":"ESTAMP. 351","352":"ESTAMP. 352","353":"ESTAMP. 353","354":"ESTAMP. 354","355":"ESTAMP. 355","356":"ESTAMP. 356","357":"ESTAMP. 357","358":"ESTAMP. 358","359":"ESTAMP. 359","360":"ESTAMP. 360","361":"ESTAMP. 361","362":"ESTAMP. 362","363":"ESTAMP. 363","364":"ESTAMP. 364","365":"ESTAMP. 365","366":"ESTAMP. 366","367":"ESTAMP. 367","368":"ESTAMP. 368","369":"ESTAMP. 369","370":"ESTAMP. 370","371":"ESTAMP. 371","372":"ESTAMP. 372","373":"ESTAMP. 373","374":"ESTAMP. 374","375":"ESTAMP. 375","376":"ESTAMP. 376","377":"ESTAMP. 377","378":"ESTAMP. 378","379":"ESTAMP. 379","380":"ESTAMP. 380","381":"ESTAMP. 381","382":"ESTAMP. 382","383":"ESTAMP. 383","384":"ESTAMP. 384","385":"357/358","386":"ESTAMP.386","387":"ESTAMP.387","388":"367/368","389":"346/347","390":"ESTAMP.390","391":"LUXE","392":"PRESENCE","393":"365/359","394":"366/805","395":"ESTAMP.395","396":"ESTAMP.396","397":"ESTAMP.397","398":"FOGO","399":"PRETO COM MARFIM","400":"GLAN COM STAR WARS","401":"ESTAMP.401","402":"ESTAMP.402","403":"ATALAIA COM FRAIS","404":"VERDE OLIVA","405":"BRONZEADA","406":"ESTAMP.406","407":"PRETO COM CROMO","408":"ESTAMP.408","409":"PRETO BICOLOR","410":"PRETO COM BRONZEADA","411":"PRETO COM BRANCO","412":"351/352","413":"AREIA","414":"PRETO/DESEJO/CROMO","415":"PRETO/BRONZEADA/CHOCOLATE","416":"PRETO/GLAN/PINK","417":"ESTAMP.417","418":"ESTAMP.418","419":"ESTAMP 419","420":"ONÇA COM PRETO","421":"NANCY","422":"FLORENÇA (JAZZ)","423":"MESCLA ESCURO","424":"ESTAMP.424","425":"ESTAMP.425","426":"ESTAMP.426","427":"ESTAMP.427","428":"ESTAMP.428","429":"ESTAMP.429","430":"AZUL MARINHO BICOLOR","431":"ESTAMP.431","432":"SATIN","433":"ESTAMP. 433","434":"ESTAMP. 434","435":"FAUNA","436":"ESTAMP.436","437":"ESTAMP.437","438":"ESTAMP.438","439":"ESTAMP.439","440":"ESTAMP.440","441":"ABACAXI","442":"ESTAMP.442","443":"GAROA","444":"ESTAMP.444","445":"ESTAMP.445","446":"ESTAMP.446","447":"ESTAMP.447","448":"ESTAMP.448","449":"ESTAMP.449","450":"ESTAMP.450","451":"ESTAMP.451","452":"ESTAMP.452","453":"ESTAMP.453","454":"ESTAMP.454","455":"ESTAMP.455","456":"STAR WARS","457":"ESTAMP.457","458":"ESTAMP. 458","459":"ESTAMP.459","460":"ESTAMP.460","461":"ESTAMP.461","462":"SIDERAL C/ SECOND","463":"RUBI BICOLOR","464":"PRETO COM BIC","465":"AREIA COM EXTREME","466":"EXTREME COM AREIA","467":"SIDERAL COM RUBI","468":"ROSEWOOD COM AREIA","469":"ESTAMP. 469","470":"SIG BOL C/ SIDERAL","471":"ESTAMP. 471","472":"ESTAMP.458 COM FRAIS","473":"LIMÂO/PRETO/ROSEWOOD","474":"NAKON","475":"MOSTARDA/PRETO/LIMÃO","476":"ROSEWOOD COM SIDERAL","477":"ZOUK","478":"MAHU","479":"469/991","480":"ESTAMP. 480","481":"ESTAMP. 481","482":"369/370","483":"991/471","484":"PRETO RETRÔ","485":"TIJUANA","486":"ESTAMP. 486","487":"PRETO RETRO COM BRANCO","488":"ESTAMP. 488","489":"LEON","490":"SIDERAL RETRÔ","491":"MARBELLA COM PLATINE","492":"PAPRIKA","493":"ESTAMP. 493","494":"PRETO COM PONKAN","495":"ESTAMP. 495","496":"ESTAMP. 496","497":"ESTAMP. 497","498":"ESTAMP. 498","499":"ESTAMP. 499","500":"SERENO COM PRETO","501":"ATALAIA","502":"FUCSIA","503":"DIVINO COM PRETO","504":"PRETO COM PLATINE","505":"PRETO COM LIQUOR","506":"ESTAMP.506","507":"ESTAMP. 507","508":"STAR WARS COM PRETO","509":"ORVALHO COM PRETO","510":"MESCLA CLARO","511":"PRETO/CROMO/ROSA BEBE","512":"SENSUALY/AGAVE/PRETO","513":"CHICLETE","514":"TURQUESA","515":"PATBO COM DESEJO","516":"GALÁXIA","517":"ABACAXI PRETO","518":"ABACAXI BRANCO","519":"ABACAXI ROSA","520":"ABACAXI AZUL","521":"TRILOBAL","522":"BRANCO COM GALÁXIA","523":"CARROS","524":"SAN RAFHAEL","525":"355/347","526":"376/359","527":"ESTAMP. 374 COM ROSEWOOD","528":"TIMAO VERMELHO","529":"ESTAMP.381 COM PRETO","530":"SIDERAL/SIDERAL RETRÔ/CROMO","531":"PLATINE/PRETO RETRÔ/PRETO","532":"MESCLA/PRETO RETRÔ/PRETO","533":"PRETO COM MADRAS","534":"SIDERAL COM CROMO","535":"PLATINE COM PRETO","536":"GALAXIA COM CROMO","537":"PLATINE COM MARFIM","538":"MADRAS","539":"MADRAS COM ROSEWOOD","540":"ESTAMP.540","541":"ESTAMP.541","542":"ESTAMP. 542","543":"ESTAMP.543","544":"ESTAMP.544","545":"ESTAMP.545","546":"ESTAMP.546","547":"364/805","548":"BANGUI","549":"ESTAMP. 549","550":"ESTAMP.550","551":"HAMAS","552":"ESTAMP.552","553":"ESTAMP. 553","554":"NEBLINA","555":"ONEBLACK","556":"ZERUCCI","557":"ESTAMP.557","558":"MAAK","559":"ESTAMP.559","560":"MATTOS","561":"GOMM","562":"XINGU","563":"GANGES","564":"FAMILIA 1","565":"EUFRATES","566":"HONOLULU","567":"ORLEAES","568":"AUSTIN","569":"PURUS","570":"NILO BR","571":"AMUR","572":"YUKON","573":"MISSOURI","574":"LENISSEI","575":"ISLA","576":"MUJERES","577":"ESTAMP. 577","578":"ESTAMP. 578","579":"ESTAMP. 579","580":"HUATULCO","581":"AKUMAL BEACH","582":"ESTAMP. 582","583":"CHAPULTEPEC","584":"BELLINI","585":"ESTAMP. 585","586":"ESTAMP. 586","587":"ESTAMP. 587","588":"ESTAMP. 588","589":"ESTAMP. 589","590":"AGUANAVAL","591":"ESTAMP. 591","592":"ESTAMP. 592","593":"ESTAMP. 593","594":"ESTAMP. 594","595":"ESTAMP. 595","596":"LUZES","597":"ESTAMP. 597","598":"ESTAMP. 598","599":"ESTAMP. 599","600":"549/550","601":"GOA COM PONKAN","602":"OUTONO","603":"PRIMAVERA","604":"DESEJO COM PRETO","605":"LILAS/GOA/PONKAN","606":"STELMA","607":"SOFHI","608":"SENSUALY/GOA/PRETO","609":"RESEDA","610":"BIC COM FRESH GREEN","611":"STANS","612":"EXTREME COM FRESH GREEN","613":"PINK COM EXTREME","614":"LILÁS COM GOA","615":"COG","616":"PAULET","617":"FRAIS COM OURO","618":"CORAL/AREIA/LILÁS","619":"MADRAS","620":"ROSEWOOD/OURO/FRAIS","621":"595/594","622":"598/597","623":"PALMETE","624":"ESTAMP.624","625":"ESTAMP.625","626":"ESTAMP. 626","627":"ESTAMP.627","628":"VERDE MILITAR","629":"ATOL MEXICALE","630":"ESTAMP. 630","631":"COURO PRETO","632":"ESTAMP.632","633":"ESTAMP.633","634":"ESTAMP.634","635":"SIDERAL AFRICA","636":"ESTAMP.636","637":"ESTAMP.637","638":"ESTAMP.638","639":"ESTAMP.639","640":"ESTAM.640","641":"ESTAMP.641","642":"CORRIDA","643":"ESTAMP. 643","644":"ESTAMP. 644","645":"ESTAMP. 645","646":"MUSTARD YELLOW","647":"BRANCO C TOFFE","648":"OLD ROSE","649":"SIDERAL C BRANCO","650":"BRANCO BICOLOR","651":"FRAIS BICOLOR","652":"BASE COM DIVINO","653":"ESTAMP. 653","654":"ESTAMP. 654","655":"ORANGE FRESH","656":"ESTAMP.656","657":"ESTAMP.657","658":"ASTANA","659":"ESTAMP.659","660":"RIADE","661":"ESTAMP.661","662":"AREIA COM GAROA","663":"GAROA COM CHICLETE","664":"CHICLETE/AREIA/GAROA","665":"BRANCO/GAROA/OURO","666":"PRETO/CROMO/ESTAMP.895","667":"ROSEWOOD BICOLOR","668":"FRAIS/ORANGE FRESH/LILÁS","669":"ESTAMP.669","670":"ESTAMP. 670","671":"ESTAMP.671","672":"ESTAMP.672","673":"AZUL BEBE COM ROSEWOOD","674":"ESTAMP.674","675":"ESTAMP.675","676":"SIDERAL MESCLA","677":"PINK COM MARBELLA","678":"PINK COM PAPRIKA","679":"FRAIS/FRESH GREEN/BOMBASTIC","680":"ESTAMP.680","681":"SHARK COM FRAIS","682":"SANTO ANTONIO","683":"SANTO REIS","684":"SHARK  COM PONKAN","685":"EXTREME RETRO","686":"LILAS RETRO","687":"EXTREME RETRO/ESTAMP.592","688":"LILAS RETRO/ ESTAMP.593","689":"CACTUS","690":"LILAS COM ORANGE FRESH","691":"EXTREME COM ORANGE FRESH","692":"ESTAMP.692","693":"UNICORN","694":"ESTAMP.694","695":"ESTAMP.695","696":"ESTAMP. 696","697":"MARROM  MONTARIA","698":"GRAFITO MONTARIA","699":"ESTAMP.699","700":"ESTAMP.700","701":"ESTAMP.701","702":"LILAS/FRAIS/ZOUK","703":"PRETO ANEL","704":"CAMÉLIA","705":"ARENITO","706":"ZOUK/FRAIS/PAPRIKA","707":"PLENITUDE","708":"ZOUK COM FRESH GREEN","709":"LILAS COM ZOUK","710":"LISTRADO PELETIZADO","711":"PAPRIKA COM ZOUK","712":"RÓSEAS","713":"SIDERAL COM PONKAN","714":"ABÉLIA","715":"SIDERAL RETRÔ COM RUBI","716":"ESTAMP. 716","717":"ROSA ERA","718":"ESTAMP. 718","719":"ESTAMP. 719","720":"ESTAMP.720","721":"ESTAMP.721","722":"ESTAMP.722","723":"VIOLETA","724":"TROPICALE","725":"692/701","726":"ESTAMP 726","727":"ESTAMP. 727","728":"ESTAMP. 728","729":"BIRD","730":"ESTAMP. 730","731":"ESTAMP.731","732":"ARGYLE","733":"BANDANA","734":"SUN","735":"POA COLORS","736":"BEM ME QUER","737":"XADREZ GREEN","738":"LISTRAS COLORS","739":"ESTAMP. 739","740":"FIORITO","741":"ESTAMP. 741","742":"ESTAMP. 742","743":"LILY","744":"AMARILIS","745":"DELICATE","746":"PRETO FLORAL","747":"COG TROPICAL","748":"HIBISCO","749":"TROPICAL FLORES","750":"ESTAMP 750","751":"FEATHER","752":"GRANADINAS","753":"TUCANO FLORAL","754":"ESTAMP 754","755":"ESTAMP. 755","756":"ESTAMP. 756","757":"ESTAMP.757","758":"ESTAMP.758","759":"MESCLA/PRETO/FRESH GREEN","760":"PRETO/BRANCO/LILAS","761":"SHARK/BRANCO/FRAIS","762":"MARFIM/GELATINA/FRAIS","763":"EXTREME RETRO/FRAIS/ORANGE FRESH","764":"BORA BORA","765":"CHAMPANHE","766":"BANANINHA","767":"GIRASSOL BLACK","768":"GIRASSOL AZUL","769":"EXTREME RETRO/FRAIS/LILAS RETRO","770":"PRETO COM LILAS","771":"PANAMÁ","772":"PRETO COM PAPRIKA","773":"MARGARIDAS","774":"BOTTON","775":"PARADISE","776":"AN BANG","777":"BYCON BAY","778":"PRETO COM PINK","779":"PRETO COM FRESH GREEN","780":"BAÍA DE MAIA","781":"PRETO/FRESH GREEN/GRANIZO","782":"CAÍCOS","783":"TANZÂNIA","784":"HANALI BAY","785":"PLAYA","786":"MARGARET","787":"PRETO/PONKAN/CROMO","788":"SIDERAL/ORANGE FRESH/EXTREME","789":"SOY FELIZ","790":"TÚ SOLO","791":"EL PALMERO","792":"PRETO/PAPRIKA/PINK","793":"AÇO/DESEJO/CROMO","794":"AÇO/FRESH GREEN/GALAXIA","795":"AÇO","796":"ESTAMP.796","797":"PAVAROTE","798":"XADREZ MAXI RUBI","799":"GRANADINAS C/ TAHITI","800":"TUCANO FLORA C/ PRETO","801":"SIDERAL COM LILÁS","802":"COG TROPICAL C/ BIC","803":"NAKON","804":"EXSUS","805":"CROW","806":"ZOUK COM MESCLA","807":"PINK COM PRETO","808":"FRESH COM MESCLA","809":"PINK MESCLADO","810":"PINK COM MESCLA","811":"FRESH COM PRETO","812":"GOIABA","813":"PRETO/FRESH GREEN/CROMO","814":"ESTAMP. 814","815":"ESTAMP. 815","816":"ESTAMP. 816","817":"ESTAMP. 817","818":"ESTAMP. 818","819":"ESTAMP. 819","820":"ESTAMP. 820","821":"ESTAMP. 821","822":"ESTAMP. 822","823":"ESTAMP. 823","824":"BASE COM FRESH GREEN","825":"BASE COM LILÁS","826":"ESTAMP.826","827":"ESTAMP.827","828":"823/822","829":"PRETO COM ZOUK","830":"ESTAMP.830","831":"ESTAMP.831","832":"ESTAMP.832","833":"ESTAMP.833","834":"817/818","835":"EST.820 COM GELATINA","836":"EST.814 COM ROSEWOOD","837":"EST.827 COM ORANGE FRESH","838":"818/819","839":"PRETO COM ORANGE FRESH","840":"FRESH GREEN COM FRAIS","841":"LILAS COM EXTREME","842":"ESTAMP.842","843":"ESTAMP.843","844":"GALAXIA","845":"ESTAMP.845","846":"LILAS/FRAIS/EXTREME","847":"PRETO COM ATALAIA","848":"SIDERAL COM MESCLA","849":"ESTAMP.849","850":"ESTAMP.850","851":"ESTAMP.851","852":"ESTAMP.852","853":"PRETO/CROMO/FLORENÇA","854":"SIDERAL/CROMO/LIMÃO","855":"ESTAMP.855","856":"ESTAMP.856","857":"ESTAMP.857","858":"SIDERAL COM PAPRIKA","859":"PRETO/CROMO/FRESH GREEN","860":"SIDERAL/CROMO/PAPRIKA","861":"ESTAMP.861","862":"ESTAMP.862","863":"ESTAMP.863","864":"ESTAMP.864","865":"ESTAMP.865","866":"ESTAMP.866","867":"850/851","868":"PRETO/CROMO/PAPRIKA","869":"ZOUK/CROMO/PAPRIKA","870":"ZOUK COM PAPRIKA","871":"SIDERAL COM FRESH GREEN","872":"ESTAMP.872","873":"ESTAMP.873","874":"ESTAMP.874","875":"ESTAMP.875","876":"ESTAMP.876","877":"ULUWATU","878":"ESTAMP.878","879":"ESTAMP.879","880":"SUNCRIN","881":"BRANCO COM VIOLETA","882":"COQUER","883":"BRANCO COM PAPRIKA","884":"ESTAMP.884","885":"GILI","886":"ISLANDS","887":"SEMINYAK","888":"DEMPASAR","889":"ESTAMP.889","890":"TIRTA","891":"ESTAMP.891","892":"ESTAMP.892","893":"ESTAMP.893","894":"ESTAMP.894","895":"ESTAMP.895","896":"ESTAMP.896","897":"ESTAMP.897","898":"ESTAMP.898","899":"ESTAMP.899","900":"ESTAMP.900","901":"ESTAMP.901","902":"ESTAMP.902","903":"ESTAMP.903","904":"ESTAMP.904","905":"ESTAMP.905","906":"ESTAMP.906","907":"MAÇA VERDE","908":"FRAIS COM ORANGE FRESH","909":"PAPRIKA COM LILAS","910":"FRESH GREEN COM EXTREME","911":"SIDERAL/CROMO/FRESH GREEN","912":"MESCLA/PRETO/PAPRIKA","913":"ESTAMP. 913","914":"ESTAMP. 914","915":"PRETO/CROMO/PINK","916":"AÇO COM PAPRIKA","917":"CROMO COM PAPRIKA","918":"PINK COM ZOUK","919":"GALAXIA/STAR WARS/PINK","920":"GLAN COM PAPRIKA","921":"AÇO/STAR WARS/PINK","922":"PRETO/CINZA/LIQUOR","923":"SAINT TROPEZ","924":"PRETO/AÇO/LIQUOR","925":"PRETO/FRESH GREEN/BRANCO","926":"ESTAMP. 926","927":"BRANCO/PAPRIKA/LILAS","928":"ESTAMP. 928","929":"ESTAMP. 929","930":"ESTAMP. 930","931":"BRANCO COM DOURADO","932":"ESTAMP. 932","933":"ESTAMP. 933","934":"ESTAMP. 934","935":"PRETO COM DOURADO","936":"FRAIS COM SIDERAL","937":"ESTAMP. 937","938":"ESTAMP. 938","939":"PRETO COM VIOLETA","940":"BRANCO COM SAINT TROPEZ","941":"ESTAMP. 941","942":"BRANCO COM BIC","943":"AÇO/SAINT TROPEZ/ZOUK","944":"BIC/AÇO/PRETO","945":"ESTAMP. 945","946":"ESTAMP. 946","947":"ESTAMP. 947","948":"ESTAMP. 948","949":"ESTAMP. 949","950":"ESTAMP. 950","951":"ESTAMP. 951","952":"ESTAMP. 952","953":"ESTAMP. 953","954":"ESTAMP. 954","955":"ESTAMP. 955","956":"669/946","957":"BRANCO/SAINT TROPEZ/BIC","958":"ESTAMP. 958","959":"SAINT TROPEZ/ZOUK/BIC","960":"ESTAMP. 960","961":"ESTAMP. 961","962":"ESTAMP. 962","963":"ESTAMP. 963","964":"ESTAMP. 964","965":"BRANCO/PRETO/SAINT TROPEZ/BIC","966":"SIDERAL/SENSUALY/PLATINE","967":"PRETO/BIC/FRESH GREEN","968":"PRETO/DESEJO/FRAIS","969":"963/964","970":"PRETO/CINZA/FRAIS","971":"ESTAMP.971","972":"ESTAMP. 972","973":"ESTAMP. 973","974":"ESTAMP. 974","975":"ESTAMP. 975","976":"ESTAMP. 976","977":"ESTAMP. 977","978":"945/962","979":"971/973","980":"971/972","981":"ESTAMP. 981","982":"ESTAMP. 982","983":"ESTAMP. 983","984":"ESTAMP. 984","985":"ESTAMP. 985","986":"ESTAMP. 986","987":"CORAL COM BRILHO","988":"PRETO COM BRILHO","989":"RUBI COM BRILHO","990":"ZOUK COM BRILHO","991":"ESTAMP. 991","992":"ESTAMP. 992","993":"ESTAMP. 993","994":"ESTAMP. 994","995":"ESTAMP. 995","996":"ESTAMP. 996","997":"ESTAMP. 997","998":"ESTAMP. 998","999":"ESTAMP. 999","A01":"ESTAMP. A01","A02":"ESTAMP.A02","A03":"ESTAMP.A03","A05":"VALENTINO","A06":"BRONZEADA COM SENSUALY","A07":"BRONZEADA COM MARFIM","A08":"MALDIVAS COM SIDERAL","A09":"ESTAMP.A09","A10":"ESTAMP.A10","A11":"ESTAMP.A11","A12":"ESTAMP.A12","A13":"ESTAMP.A13","A14":"ESTAMP.A14","A15":"ESTAMP.A15","A16":"ESTAMP.A16","A17":"ESTAMP.A17","A18":"ESTAMP.A18","A19":"ESTAMP.A19","A20":"ESTAMP.A20","A21":"ESTAMP.A21","A22":"ESTAMP.A22","A23":"ESTAMP.A23","A24":"ESTAMP.A24","A25":"ESTAMP.A25","A26":"ESTAMP.A26","A27":"ESTAMP.A27","A28":"ESTAMP.A28","A29":"PESSEGO","A30":"CARAMBOLA","A31":"ESTAMP.A31","A32":"ESTAMP.A32","A33":"ESTAMP.A33","A34":"CINZA COM MAÇA VERDE","A35":"SERENO COM MARFIM","A36":"RUBI COM MARFIM","A37":"ROXO TRENDY","A38":"ESTAMP.A38","A39":"CORALINA","A40":"COFFE","A41":"DUSK","A42":"ESTAMP.A42","A43":"ESTAMP.A43","A44":"ESTAMP.A44","A45":"ESTAMP.A45","A46":"ESTAMP.A46","A47":"ESTAMP.A47","A48":"PISTACHE","A49":"ESTAMP.A49","A50":"FROZEN","A51":"LAVANDA","A52":"MAGENTA","A53":"ENSEADA","A54":"ESTAMP.A54","A55":"ESTAMP.A55","A56":"AMELIA","A57":"ESTAMP.A57","A58":"ESTAMP.A58","A59":"ESTAMP.A59","A60":"ESTAMP.A60","A61":"ESTAMP.A61","A62":"ESTAMP.A62","A63":"ESTAMP.A63","A64":"ESTAMP.A64","A65":"ESTAMP.A65","A66":"ESTAMP.A66","A67":"ESTAMP.A67","A68":"NAUTICO","A69":"BLUSH","A70":"ROSEWOOD COM MARFIM","A71":"AMETISTA","A72":"LAVANDA COM FRESH GREEN","A73":"BLUSH COM MARFIM","A74":"FROZEN COM MARFIM","A75":"ESTAMP.A75","A76":"ESTAMP.A76","A77":"ESTAMP.A77","A78":"ESTAMP.A78","A79":"ESTAMP.A79","A80":"ESTAMP.A80","A81":"ESTAMP.A81","A82":"ESTAMP.A82","A83":"ESTAMP.A83","A84":"ESTAMP.A84","A85":"ESTAMP.A85","A86":"ESTAMP.A86","A87":"ESTAMP.A87","A88":"ESTAMP.A88","A89":"ESTAMP.A89","A90":"ESTAMP.A90","A91":"ESTAMP.A91","A92":"ESTAMP.A92","A93":"ESTAMP.A93","A94":"ESTAMP.A94","A95":"ESTAMP.A95","A96":"ESTAMP.A96","A97":"ESTAMP.A97","A98":"ESTAMP.A98","A99":"ESTAMP.A99","B01":"PLATINUM","B02":"FOLIAGE","B03":"BAROLO","B04":"DESEJO COM CROMO","B05":"PLATINUM COM LIQUOR","B06":"LOLA","B07":"CAPUCCINO","B08":"A80/A81","B09":"A82/A83","B10":"ESTAMP.B10","B11":"BANDANA","B12":"MENTA","B13":"PURPURA","B14":"MATCHA","B15":"AZUL TURQUEZA","B16":"TOMATE","B17":"CONHAQUE","B18":"ESTAMP.B18","B19":"ESTAMP.B19","B20":"ESTAMP.B20","B21":"KAKI","B22":"SKY","B23":"ESTAMP.B23","B24":"ESTAMP.B24","B25":"ESTAMP.B25","B26":"ESTAMP.B26","B27":"ESTAMP.B27","B28":"AMARELO SUNKISS COM CINZA","B29":"TAMISA","B30":"BRISA","B31":"B23/B24","B32":"B27/B24","B33":"B25/B26","B34":"319/320","B35":"MARFIM COM PRETO","B36":"COFFE COM BASE","B37":"PLATINE COM BASE","B38":"KAKI COM BASE","B39":"FLY","B40":"CONHAQUE COM MARFIM","B41":"ORVALHO COM MARFIM","B42":"MOUSSE","B43":"BETERRABA","B44":"ESTAMP.B44","B45":"ESTAMP.B45","B46":"MASCAVO","B47":"ESTAMP.B47","B48":"ESTAMP.B48","B49":"ESTAMP.B49","B50":"ESTAMP.B50","B51":"GINGER","B52":"ESTAMP.B52","B53":"ESTAMP.B53","B54":"ESTAMP.B54","B55":"ESTAMP.B55","B56":"ESTAMP.B56","B57":"ESTAMP.B57","B58":"ESTAMP.B58","B59":"CAFE COM COFFE","B60":"SENSUALY COM COFFE","B61":"PRETO COM COFFE","B62":"PAPRIKA DOCE","B63":"FIGO","B64":"CASTANHO","B65":"CARMIM","B66":"PRETO COM SIDERAL","B67":"SENSUALY COM PAPRIKA DOCE","B68":"ROMA","B69":"PODE USAR","B70":"MARINA","B71":"AMORA","B72":"ESTAMP.B72","B73":"ESTAMP.B73","B74":"ESTAMP.B74","B75":"ESTAMP.B75","B76":"ESTAMP.B76","B77":"ESTAMP.B77","B78":"ESTAMP.B78","B79":"ESTAMP.B79","B80":"ESTAMP.B80","B81":"ANTIQUE","X001":"BRANCO"};
+
+/* nome normalizado (sem acento/pontuação) -> lista de códigos
+   (alguns nomes têm mais de um código, ex.: PRETO = 002 e 0002) */
+function normNome(s){
+  return s.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+          .replace(/[^A-Z0-9]+/g," ").trim();
+}
+const CORES_POR_NOME = {};
+for(const c in CORES){
+  const n = normNome(CORES[c]);
+  if(n) (CORES_POR_NOME[n] = CORES_POR_NOME[n] || []).push(c);
+}
+function nomeDaCor(cor){ return CORES[cor] || ""; }
+
+/* procura os códigos de uma cor pelo nome; se o nome estiver
+   incompleto e só existir UMA cor que comece assim, usa ela  */
+function coresPorNome(txt){
+  const n = normNome(txt);
+  if(!n) return {codigos:[]};
+  if(CORES_POR_NOME[n]) return {codigos:CORES_POR_NOME[n]};
+  const chaves = Object.keys(CORES_POR_NOME).filter(k=>k.startsWith(n));
+  if(chaves.length===1) return {codigos:CORES_POR_NOME[chaves[0]]};
+  return {codigos:[], sugestoes:chaves.slice(0,4)};
+}
+
 /* LOGO OFICIAL (opcional):
-   coloque aqui a URL do logo da marca (ex.: "/logo.png" ou
-   "https://seusite.com.br/logo.png") para substituir o
-   emblema desenhado. Deixe "" para usar o emblema.        */
+   coloque aqui a URL de um ARQUIVO de logo (ex.: "/logo.png" ou
+   "https://seusite.com.br/logo.png") para usar no lugar do
+   texto ART/STILO desenhado. Deixe "" para usar o texto.   */
 const LOGO_URL = "";
 
 function fotoUrl(ref, cor, seq){ return FOTO_BASE + ref + "_" + cor + "-" + seq + FOTO_EXT; }
 
-/* ---------- Logo (emblema SVG: sol, onda e areia) ---------- */
-let _logoN = 0;
-function logoHtml(h){
-  if(LOGO_URL) return '<img src="'+LOGO_URL+'" alt="Art Stilo" style="height:'+h+'px">';
-  const id = "lg" + (_logoN++);
-  return '<svg width="'+h+'" height="'+h+'" viewBox="0 0 48 48" role="img" aria-label="Art Stilo">'
-    +'<defs><linearGradient id="'+id+'a" x1="0" y1="0" x2="1" y2="1">'
-    +'<stop offset="0" stop-color="#15b5c2"/><stop offset="1" stop-color="#0a5f68"/>'
-    +'</linearGradient></defs>'
-    +'<rect x="1.5" y="1.5" width="45" height="45" rx="14" fill="url(#'+id+'a)" stroke="rgba(255,255,255,.35)" stroke-width="1.5"/>'
-    +'<circle cx="31.5" cy="15" r="6" fill="#ffd166"/>'
-    +'<path d="M3 30 q6 -6 11 0 t11 0 t11 0 t9 0 v9 a6 6 0 0 1 -6 6 h-30 a6 6 0 0 1 -6 -6 z" fill="rgba(255,255,255,.92)"/>'
-    +'<path d="M3 36 q6 -5 11 0 t11 0 t11 0 t9 0 v3 a6 6 0 0 1 -6 6 h-30 a6 6 0 0 1 -6 -6 z" fill="#ff6f5e"/>'
-    +'</svg>';
+/* ---------- Marca ART/STILO (texto no estilo do logo oficial) ----------
+   O número em data-logo é o tamanho da letra; com LOGO_URL,
+   vira a altura da imagem (x2.2).                                       */
+function logoHtml(size){
+  size = +size || 20;
+  if(LOGO_URL) return '<img src="'+LOGO_URL+'" alt="ART/STILO" style="height:'+Math.round(size*2.2)+'px">';
+  return '<span class="brandmark" style="font-size:'+size+'px">'
+    +'<span class="wm">ART/STILO<span class="rr">&reg;</span></span>'
+    +'<span class="wm-slogan">O que te move.</span>'
+    +'</span>';
 }
-document.querySelectorAll(".logo-slot").forEach(el=>{ el.innerHTML = logoHtml(el.dataset.logo||44); });
+document.querySelectorAll(".logo-slot").forEach(el=>{ el.innerHTML = logoHtml(el.dataset.logo||20); });
 
 /* ---------- Configuração das bibliotecas ---------- */
 if (window.pdfjsLib) {
@@ -402,19 +432,62 @@ function extractPairs(text){
   return pares;
 }
 
-/* Entrada manual: "F500 207, F518 A07" */
+/* Entrada manual: aceita o CÓDIGO ou o NOME da cor.
+   Ex.: "F500 207, F518 A07" ou "F500 preto, B074C rosa bebe"
+   Se o nome tiver mais de um código (PRETO = 002 e 0002),
+   cria um "grupo" de candidatos — depois da busca, só ficam
+   os códigos que realmente têm foto no acervo.              */
 function parseManual(str){
-  const pares=[]; const seen=new Set();
-  const re=/([A-Za-z]{1,4}\s?\d{2,6}[A-Za-z]{0,3})[\s\-_/;:,]+([A-Za-z]?\d{1,4})/g;
-  let m;
-  while((m=re.exec(str))!==null){
-    const ref=normRef(m[1].replace(/\s/g,"")), cor=normCor(m[2]);
-    if(!ref||!cor) continue;
-    const key=ref+"_"+cor;
-    if(seen.has(key)) continue;
-    seen.add(key); pares.push({ref,cor});
-  }
-  return pares;
+  const pares=[]; const seen=new Set(); const avisos=[]; let grupoN=0;
+  const REF_RE=/^[A-Za-z]{1,4}\d{2,6}[A-Za-z]{0,3}$/;
+  const COD_RE=/^[A-Za-z]?\d{1,4}$/;
+  const addPar=(ref,cor,grupo)=>{
+    const k=ref+"_"+cor;
+    if(!seen.has(k)){ seen.add(k); pares.push(grupo?{ref,cor,grupo}:{ref,cor}); }
+  };
+  str.split(/[,;\n]+/).forEach(chunk=>{
+    const toks=chunk.replace(/[-_./:]+/g," ").trim().split(/\s+/).filter(Boolean);
+    let i=0;
+    while(i<toks.length){
+      const t=toks[i].toUpperCase();
+      if(!REF_RE.test(t)){ i++; continue; }
+      const ref=normRef(t);
+      if(!ref){ i++; continue; }
+      const prox=(i+1<toks.length)?toks[i+1].toUpperCase():"";
+      if(COD_RE.test(prox)){                 /* cor em código: F500 207 / F518 A07 */
+        const cor=normCor(prox);
+        if(cor) addPar(ref,cor);
+        i+=2; continue;
+      }
+      const nome=toks.slice(i+1).join(" ");  /* cor pelo NOME (até o fim do trecho) */
+      if(!nome){ avisos.push("Faltou a cor da referência "+ref+"."); }
+      else{
+        const r=coresPorNome(nome);
+        if(r.codigos.length){
+          const grupo=r.codigos.length>1 ? ("g"+(++grupoN)) : null;
+          r.codigos.forEach(c=>addPar(ref,c,grupo));
+        }else if(r.sugestoes && r.sugestoes.length){
+          avisos.push('Cor "'+nome+'": existe mais de uma parecida ('+r.sugestoes.join(", ")+'). Digite o nome completo.');
+        }else{
+          avisos.push('Não achei a cor "'+nome+'" na tabela de cores.');
+        }
+      }
+      break;                                 /* o nome consome o resto do trecho */
+    }
+  });
+  return {pares,avisos};
+}
+
+/* quando a cor veio pelo NOME com mais de um código possível,
+   mantém só os códigos que têm foto (ou um deles, se nenhum tiver) */
+function escolherCandidatos(produtos){
+  const grupos={};
+  produtos.forEach(p=>{ if(p.grupo) (grupos[p.grupo]=grupos[p.grupo]||[]).push(p); });
+  return produtos.filter(p=>{
+    if(!p.grupo) return true;
+    const g=grupos[p.grupo];
+    return g.some(x=>x.fotos.length) ? p.fotos.length>0 : g[0]===p;
+  });
 }
 
 /* =========================================================
@@ -443,7 +516,7 @@ async function discoverFotos(pares, onStep){
       if(!ok) break;                 // parou: não verifica as próximas
       fotos.push(url);
     }
-    produtos.push({ref, cor, fotos});
+    produtos.push(Object.assign({}, pares[i], {fotos}));
   }
   return produtos;
 }
@@ -459,8 +532,15 @@ async function fetchBlob(url){
 function nameFor(url){ return url.split("/").pop(); }
 function triggerDownload(blob,filename){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);}
 
-/* --- Salvar na galeria (menu de compartilhar do celular:
-       opção "Salvar imagens" -> fototeca) --- */
+/* --- Salvar na galeria ---
+   Nenhum site consegue gravar direto na fototeca (regra de
+   privacidade do iPhone/Android); o mais perto possível é abrir
+   o menu de compartilhar já com as fotos anexadas — a revendedora
+   toca em "Salvar imagens" e tudo vai para a galeria de uma vez.
+   Se forem fotos demais para um envio só, o app divide em PARTES
+   e pede um toque para cada parte.                              */
+const LOTE_MAX = 24;   // máximo de fotos por envio ao menu de compartilhar
+
 function canShareFiles(){
   try{
     if(!navigator.canShare || !navigator.share) return false;
@@ -471,21 +551,40 @@ function canShareFiles(){
 
 function bindGalleryButton(btn, getUrls){
   const label = btn.textContent;
-  let prepared = null;   // arquivos prontos aguardando um toque direto
+  let lotes = null, total = 0;   // partes prontas aguardando toques
+
+  const rotulo = ()=>{
+    const feito = total - lotes.length;
+    return total>1 ? "Toque p/ salvar — parte "+(feito+1)+" de "+total
+                   : "Toque para salvar "+lotes[0].length+" foto(s)";
+  };
+  const encerrar = ()=>{ lotes=null; total=0; btn.textContent=label; };
+
+  /* envia a próxima parte ao menu de compartilhar */
+  async function compartilhar(){
+    await navigator.share({files:lotes[0], title:"Fotos ART/STILO"});
+    lotes.shift();
+    if(!lotes.length){
+      const t = total; encerrar();
+      toast(t>1 ? "Pronto! Todas as partes foram enviadas à galeria."
+                : "Escolha “Salvar imagens” para enviar à galeria.");
+    }else{
+      btn.textContent = rotulo();
+      toast("Parte enviada! Toque no botão de novo para a próxima.");
+    }
+  }
+
   btn.addEventListener("click", async ()=>{
-    /* 2º toque: compartilha imediatamente (gesto direto do usuário) */
-    if(prepared){
-      const files = prepared;
-      try{
-        await navigator.share({files, title:"Fotos Art Stilo"});
-        toast("Escolha “Salvar imagens” para enviar à galeria.");
-        prepared = null; btn.textContent = label;
-      }catch(e){
-        if(e.name!=="AbortError"){ toast("Não foi possível abrir o menu de compartilhar."); prepared=null; btn.textContent=label; }
+    /* toques seguintes: já há partes prontas, envia a próxima */
+    if(lotes){
+      try{ await compartilhar(); }
+      catch(e){
+        if(e.name==="AbortError"){ btn.textContent = rotulo(); return; }
+        toast("Não foi possível abrir o menu de compartilhar."); encerrar();
       }
       return;
     }
-    /* 1º toque: baixa as fotos e tenta compartilhar */
+    /* 1º toque: baixa as fotos e monta as partes */
     const urls = getUrls();
     if(!urls.length) return;
     btn.disabled = true;
@@ -502,19 +601,20 @@ function bindGalleryButton(btn, getUrls){
       toast("O servidor de fotos bloqueou o acesso direto. Use o botão de baixar.");
       btn.textContent = label; return;
     }
-    if(navigator.canShare && !navigator.canShare({files})){
-      toast("Seu celular não aceitou tantas fotos de uma vez. Salve por produto.");
-      btn.textContent = label; return;
-    }
+    /* tamanho da parte: começa em LOTE_MAX e diminui até o celular aceitar */
+    let tam = Math.min(files.length, LOTE_MAX);
     try{
-      await navigator.share({files, title:"Fotos Art Stilo"});
-      toast("Escolha “Salvar imagens” para enviar à galeria.");
-      btn.textContent = label;
-    }catch(e){
-      if(e.name==="AbortError"){ btn.textContent = label; return; }
-      /* o navegador exigiu um gesto direto: arma o 2º toque */
-      prepared = files;
-      btn.textContent = "Toque para salvar "+files.length+" foto(s)";
+      while(tam>1 && navigator.canShare && !navigator.canShare({files:files.slice(0,tam)})) tam = Math.ceil(tam/2);
+    }catch(e){}
+    lotes = [];
+    for(let i=0;i<files.length;i+=tam) lotes.push(files.slice(i,i+tam));
+    total = lotes.length;
+    if(total>1) toast("São "+files.length+" fotos — vou enviar em "+total+" partes.");
+    try{ await compartilhar(); }
+    catch(e){
+      if(e.name==="AbortError"){ btn.textContent = rotulo(); return; }
+      /* o navegador exigiu um toque direto: arma o próximo toque */
+      btn.textContent = rotulo();
       toast("Fotos prontas! Toque no botão para salvar na galeria.");
     }
   });
@@ -600,7 +700,7 @@ function renderResults(produtos, textoLido){
         ${thumbsHtml}
         <div class="info">
           <b>Referência ${prod.ref}</b>
-          <span class="sku">Cor ${prod.cor} · ${prod.fotos.length} foto(s) no acervo</span>
+          <span class="sku">Cor ${prod.cor}${nomeDaCor(prod.cor)?" · "+nomeDaCor(prod.cor):""} · ${prod.fotos.length} foto(s) no acervo</span>
           <div class="rowb">
             ${saveBtnHtml}
             <button class="btn btn-sm btn-dl">&#8681; Baixar</button>
@@ -622,7 +722,7 @@ function renderResults(produtos, textoLido){
 
   const ub=$("#unmatchedBox");
   if(semFoto.length){
-    ub.innerHTML=`<div class="unmatched"><b>Sem foto no acervo:</b> ${semFoto.map(p=>p.ref+"/"+p.cor).join(", ")}. O código pode ter sido lido errado ou as fotos ainda não foram publicadas.</div>`;
+    ub.innerHTML=`<div class="unmatched"><b>Sem foto no acervo:</b> ${semFoto.map(p=>p.ref+"/"+p.cor+(nomeDaCor(p.cor)?" ("+nomeDaCor(p.cor)+")":"")).join(", ")}. O código pode ter sido lido errado ou as fotos ainda não foram publicadas.</div>`;
   }else{ ub.innerHTML=""; }
 
   $("#readBox").innerHTML = textoLido
@@ -648,7 +748,7 @@ async function runPipeline(pares, textoLido){
     setProgress(75 + (i/total)*24, "Buscando fotos no acervo… "+ref+" cor "+cor+" ("+(i+1)+"/"+total+")");
   });
   setProgress(100,"Concluído!");
-  renderResults(produtos, textoLido);
+  renderResults(escolherCandidatos(produtos), textoLido);
 }
 
 function selectFile(file){
@@ -680,8 +780,12 @@ $("#processBtn").addEventListener("click",async()=>{
 });
 
 $("#manualBtn").addEventListener("click",async()=>{
-  const pares=parseManual($("#manualInput").value);
-  if(!pares.length){toast("Digite no formato: F500 207, F518 A07");return;}
+  const {pares,avisos}=parseManual($("#manualInput").value);
+  if(avisos.length) toast(avisos[0]);
+  if(!pares.length){
+    if(!avisos.length) toast("Digite no formato: F500 207 ou F500 preto");
+    return;
+  }
   $("#processBtn").disabled=true;$("#manualBtn").disabled=true;
   setProgress(70,"Buscando fotos no acervo…");
   try{ await runPipeline(pares, ""); }
