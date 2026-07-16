@@ -490,6 +490,27 @@ function parseManual(str){
   return {pares,avisos};
 }
 
+/* Para pares vindos do romaneio (ou digitados por código):
+   se o código da cor tem "irmãos" com o MESMO NOME na tabela
+   (ex.: PRETO = 002 e 0002), testa os irmãos também — no fim
+   vale o que tiver foto no acervo (escolherCandidatos).      */
+function expandirCores(pares){
+  const out=[]; const seen=new Set(); let g=0;
+  pares.forEach(p=>{ seen.add(p.ref+"_"+p.cor); });
+  pares.forEach(p=>{
+    out.push(p);
+    if(p.grupo) return;                      // já veio agrupado (busca por nome)
+    const nome=CORES[p.cor];
+    if(!nome) return;
+    const irmaos=(CORES_POR_NOME[normNome(nome)]||[]).filter(c=>c!==p.cor && !seen.has(p.ref+"_"+c));
+    if(!irmaos.length) return;
+    const grupo="e"+(++g);
+    p.grupo=grupo;
+    irmaos.forEach(c=>{ seen.add(p.ref+"_"+c); out.push({ref:p.ref, cor:c, grupo}); });
+  });
+  return out;
+}
+
 /* quando a cor veio pelo NOME com mais de um código possível,
    mantém só os códigos que têm foto (ou um deles, se nenhum tiver) */
 function escolherCandidatos(produtos){
@@ -770,6 +791,67 @@ function cartaoProduto(prod, shareOk){
   return el;
 }
 
+/* Cartão de produto SEM foto na cor pedida, com o botão
+   "Procurar outras cores": varre todas as cores do catálogo
+   para aquela referência e mostra as que têm foto.          */
+function cartaoSemFoto(prod, shareOk){
+  const el=document.createElement("div");el.className="prod";el.style.opacity=".85";
+  el.innerHTML=`
+    <div class="imgbox">
+      <div class="spin">Sem foto na cor ${prod.cor}</div>
+      <span class="badge">${prod.ref} · ${prod.cor}</span>
+    </div>
+    <div class="info">
+      <b>Referência ${prod.ref}</b>
+      <span class="sku">Cor ${prod.cor}${nomeDaCor(prod.cor)?" · "+nomeDaCor(prod.cor):""} · sem foto nessa cor</span>
+      <div class="rowb">
+        <button class="btn btn-sm btn-ghost btn-outras">Procurar outras cores</button>
+      </div>
+    </div>`;
+  el.querySelector(".btn-outras").addEventListener("click",
+    ev=>procurarOutrasCores(prod, el, ev.currentTarget, shareOk));
+  return el;
+}
+
+async function procurarOutrasCores(prod, el, btn, shareOk){
+  btn.disabled=true; btn.textContent="Procurando… 0%";
+  const todas=Object.keys(CORES).filter(c=>c!==prod.cor);
+  const achadas=[]; let idx=0, feitas=0;
+  async function trab(){
+    while(idx<todas.length){
+      const c=todas[idx++];
+      try{
+        const res=await headComTempo(FOTO_BASE_BAIXAR+prod.ref+"_"+c+"-1"+FOTO_EXT, 6000);
+        if(res.ok) achadas.push(c);
+      }catch(e){ /* rede: essa cor fica sem verificar nesta varredura */ }
+      feitas++;
+      if(feitas%20===0) btn.textContent="Procurando… "+Math.round(feitas/todas.length*100)+"%";
+    }
+  }
+  await Promise.all(Array.from({length:16},trab));
+  if(!achadas.length){
+    btn.textContent="Nenhuma cor deste produto tem foto";
+    el.querySelector(".spin").textContent="Produto sem foto no acervo";
+    return;
+  }
+  btn.textContent="Carregando "+achadas.length+" cor(es)…";
+  let inseridos=0;
+  for(const c of achadas.sort()){
+    const fotos=await descobrirProduto(prod.ref, c);
+    if(!fotos.length) continue;
+    const novo=cartaoProduto({ref:prod.ref, cor:c, fotos}, shareOk);
+    el.parentNode.insertBefore(novo, el.nextSibling);
+    inseridos++;
+  }
+  if(inseridos){ const vazio=document.querySelector("#grid .empty"); if(vazio) vazio.remove(); }
+  el.querySelector(".spin").textContent = inseridos
+    ? "Encontrei este produto em "+inseridos+" outra(s) cor(es) →"
+    : "Produto sem foto no acervo";
+  btn.textContent = inseridos ? "Cores encontradas ao lado" : "Nenhuma cor deste produto tem foto";
+  toast(inseridos ? "Encontrei "+prod.ref+" em "+inseridos+" outra(s) cor(es)!"
+                  : "Nenhuma cor de "+prod.ref+" tem foto no acervo.");
+}
+
 /* RESUMO IMEDIATO: assim que o romaneio é lido, mostra um
    cartão "Procurando fotos…" para cada produto identificado.
    As fotos vão chegando em segundo plano, produto a produto. */
@@ -825,6 +907,9 @@ function renderResults(produtos, textoLido){
   }else{
     comFoto.forEach(prod=>{ grid.appendChild(cartaoProduto(prod, shareOk)); });
   }
+  /* produtos sem foto na cor pedida ganham um cartão com o botão
+     "Procurar outras cores" — o produto pode ter foto em outra cor */
+  semFoto.forEach(prod=>{ grid.appendChild(cartaoSemFoto(prod, shareOk)); });
 
   const ub=$("#unmatchedBox");
   if(semFoto.length){
@@ -855,6 +940,7 @@ async function runPipeline(pares, textoLido){
   const minhaBusca = ++buscaAtual;
   const cancelada = ()=> minhaBusca !== buscaAtual;
   hideProgress();
+  pares = expandirCores(pares);             // testa também códigos "irmãos" (mesmo nome)
   renderBusca(pares);                       // resumo na hora, fotos em segundo plano
   let feitos = 0;
   const produtos = await discoverFotos(pares, (prod, i)=>{

@@ -51,6 +51,14 @@ BAIXAR (zip/galeria): https://artstilo-ecommerce-production.up.railway.app/fotos
   "Procurando fotos…" por produto e vai preenchendo em segundo plano (pedido do dono
   em 17/07/2026 para segurar o cliente sem sensação de espera). "Enviar outro" ou
   nova busca cancela a anterior (token buscaAtual).
+- Outras cores do mesmo produto (17/07/2026): um produto costuma ter foto em POUCAS
+  cores (F500 só tem em 002, 207, A40 e A71 — verificado por varredura completa).
+  Duas defesas: (1) expandirCores() testa automaticamente códigos "irmãos" com o
+  mesmo nome (PRETO = 002 e 0002) para pares vindos do romaneio; (2) produto sem
+  foto ganha cartão com botão "Procurar outras cores" (procurarOutrasCores), que
+  varre as ~1.265 cores do catálogo por HEAD (~25-30s, 16 em paralelo) e insere
+  cartões das cores com foto. Essas cores extras NÃO entram no zip/salvar-todas —
+  têm botões próprios no cartão.
 - Constantes no topo do `<script>` em index.html: FOTO_BASE_VER, FOTO_BASE_BAIXAR,
   FOTO_EXT, MAX_SEQ, COR_DIGITOS, LOGO_URL, LOTE_MAX
 
