@@ -318,10 +318,14 @@ async function readDocument(file){
   return await ocrCanvas(file);
 }
 
+/* readPdf e ocrCanvas devolvem {texto, linhas}:
+   - texto: o texto corrido (para o fallback e o "texto lido")
+   - linhas: as linhas com a POSIÇÃO X de cada palavra na página,
+     usadas pela leitura POR COLUNAS (passo 0 do extractPairs)  */
 async function readPdf(file){
   const buf = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({data:buf}).promise;
-  let text = "";
+  let text = ""; const linhas = [];
   for(let i=1;i<=pdf.numPages;i++){
     setProgress(10 + (i/pdf.numPages)*25, "Lendo página "+i+" de "+pdf.numPages+"…");
     const page = await pdf.getPage(i);
@@ -331,27 +335,39 @@ async function readPdf(file){
     content.items.forEach(it=>{
       if(!it.str || !it.str.trim()) return;
       const y = Math.round(it.transform[5]/3)*3;
-      (rows[y] = rows[y] || []).push({ x: it.transform[4], s: it.str });
+      (rows[y] = rows[y] || []).push({ x: it.transform[4], w: it.width||0, s: it.str });
     });
     Object.keys(rows).map(Number).sort((a,b)=>b-a).forEach(y=>{
-      text += rows[y].sort((a,b)=>a.x-b.x).map(o=>o.s).join(" ") + "\n";
+      const itens = rows[y].sort((a,b)=>a.x-b.x);
+      text += itens.map(o=>o.s).join(" ") + "\n";
+      const toks=[];
+      itens.forEach(o=>{
+        let off=0;
+        o.s.split(/\s+/).filter(Boolean).forEach(p=>{
+          const rel=o.s.indexOf(p,off); off=rel+p.length;
+          toks.push({t:p, x:o.x + (o.s.length ? (rel/o.s.length)*o.w : 0)});
+        });
+      });
+      if(toks.length) linhas.push(toks);
     });
   }
   // PDF sem texto selecionável (escaneado) -> renderiza e faz OCR
   if(text.replace(/\s/g,"").length < 12){
     setProgress(35, "PDF escaneado — usando reconhecimento de texto…");
-    let ocrText = "";
+    let ocrText = ""; const ocrLinhas = [];
     for(let i=1;i<=pdf.numPages;i++){
       const page = await pdf.getPage(i);
       const viewport = page.getViewport({scale:2});
       const canvas = document.createElement("canvas");
       canvas.width=viewport.width; canvas.height=viewport.height;
       await page.render({canvasContext:canvas.getContext("2d"),viewport}).promise;
-      ocrText += "\n" + await ocrCanvas(canvas);
+      const r = await ocrCanvas(canvas);
+      ocrText += "\n" + r.texto;
+      ocrLinhas.push(...r.linhas);
     }
-    return ocrText;
+    return {texto:ocrText, linhas:ocrLinhas};
   }
-  return text;
+  return {texto:text, linhas};
 }
 
 async function ocrCanvas(source){
@@ -359,7 +375,24 @@ async function ocrCanvas(source){
   const { data } = await Tesseract.recognize(source, "por", {
     logger:(m)=>{ if(m.status==="recognizing text") setProgress(38 + m.progress*35, "Reconhecendo texto… "+Math.round(m.progress*100)+"%"); }
   });
-  return data.text || "";
+  const linhas=[];
+  const addLinha=(words)=>{
+    const toks=(words||[]).map(w=>({t:(w.text||"").trim(), x:(w.bbox.x0+w.bbox.x1)/2})).filter(o=>o.t);
+    if(toks.length) linhas.push(toks);
+  };
+  if(data.lines && data.lines.length){
+    data.lines.forEach(l=>addLinha(l.words));
+  }else if(data.words && data.words.length){
+    // agrupa as palavras por altura (linha) usando a posição Y
+    const porY={};
+    data.words.forEach(w=>{
+      const y=Math.round(((w.bbox.y0+w.bbox.y1)/2)/12)*12;
+      (porY[y]=porY[y]||[]).push(w);
+    });
+    Object.keys(porY).map(Number).sort((a,b)=>a-b)
+      .forEach(y=>addLinha(porY[y].sort((a,b)=>a.bbox.x0-b.bbox.x0)));
+  }
+  return {texto:data.text||"", linhas};
 }
 
 /* =========================================================
@@ -397,7 +430,7 @@ function cleanLine(l){
 }
 function cleanTok(t){ return t.replace(/^[^A-Za-z0-9]+|[^A-Za-z0-9]+$/g,""); }
 
-function extractPairs(text){
+function extractPairs(text, linhasXY){
   const linhasRaw = text.split(/\r?\n/);
   const pares = [];
   const seen = new Set();
@@ -405,6 +438,47 @@ function extractPairs(text){
     const key=ref+"_"+cor;
     if(!seen.has(key)){ seen.add(key); pares.push({ref,cor}); }
   };
+
+  /* PASSO 0 — LEITURA POR COLUNAS (entende o romaneio de verdade):
+     quando temos a posição X de cada palavra (foto ou PDF), procura
+     o CABEÇALHO da tabela ("Cor" e "Referência"). Achou, a partir
+     dali cada linha é lida pelo ALINHAMENTO: a cor é o token da
+     coluna Cor (e que existe na tabela de cores) e a referência é
+     o token da coluna Referência — sem adivinhação. As linhas que
+     esta leitura não resolver caem nos passos 1 e 2 (rede de
+     segurança), e tudo passa pelo mesmo dedupe.                  */
+  if(linhasXY && linhasXY.length){
+    const normT = s=>s.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^A-Z0-9]/g,"");
+    let colCor=null, colRef=null, headerIdx=-1;
+    for(let li=0; li<linhasXY.length && headerIdx<0; li++){
+      let xc=null, xr=null;
+      linhasXY[li].forEach(o=>{
+        const n=normT(o.t);
+        if(n==="COR"||n==="CORES") xc=o.x;
+        else if(/^REF/.test(n) && n.length<=12) xr=o.x;
+      });
+      if(xc!=null && xr!=null){ colCor=xc; colRef=xr; headerIdx=li; }
+    }
+    if(headerIdx>=0){
+      const LIM = Math.abs(colRef-colCor);   // tolerância: a distância entre as colunas
+      for(let li=headerIdx+1; li<linhasXY.length; li++){
+        let melhorCor=null, melhorRef=null;
+        linhasXY[li].forEach(o=>{
+          const t=cleanTok(o.t);
+          if(!t) return;
+          const dc=Math.abs(o.x-colCor), dr=Math.abs(o.x-colRef);
+          if(dc<=dr && dc<=LIM*0.8){
+            const c=normCor(t);
+            if(c && CORES[c] && (!melhorCor || dc<melhorCor.d)) melhorCor={c, d:dc};
+          }else if(dr<dc && dr<=LIM*0.8){
+            const r=normRef(t);
+            if(r && (!melhorRef || dr<melhorRef.d)) melhorRef={r, d:dr};
+          }
+        });
+        if(melhorCor && melhorRef) add(melhorRef.r, melhorCor.c);
+      }
+    }
+  }
 
   /* PASSO 1 — layout ART STILO no início da linha:
      Código(4-6 díg.) Cor(2-4, pode ter letra) Referência
@@ -988,8 +1062,8 @@ $("#processBtn").addEventListener("click",async()=>{
   $("#processBtn").disabled=true;$("#manualBtn").disabled=true;
   setProgress(5,"Abrindo o documento…");
   try{
-    const text=await readDocument(selectedFile);
-    await runPipeline(extractPairs(text), text);
+    const doc=await readDocument(selectedFile);
+    await runPipeline(extractPairs(doc.texto, doc.linhas), doc.texto);
   }catch(err){
     toast("Não consegui ler este arquivo. Tente uma foto mais nítida ou um PDF válido.");
     console.error(err);

@@ -64,6 +64,15 @@ BAIXAR (zip/galeria): https://artstilo-ecommerce-production.up.railway.app/fotos
 
 ## Layouts de romaneio conhecidos (função extractPairs)
 
+- **PASSO 0 (leitura POR COLUNAS, 17/07/2026 — pedido do dono: "entender o romaneio
+  de verdade")** — readPdf e ocrCanvas devolvem {texto, linhas}, onde linhas traz a
+  POSIÇÃO X de cada palavra. O passo 0 procura o cabeçalho da tabela (um token "COR"
+  e um "REF..." na mesma linha); achando, lê cada linha seguinte pelo ALINHAMENTO:
+  cor = token mais próximo da coluna Cor (e que existe na tabela CORES), referência =
+  token mais próximo da coluna Referência (tolerância: 0,8x a distância entre as duas
+  colunas — preços à direita ficam fora do alcance). Linhas não resolvidas caem nos
+  passos 1 e 2; dedupe é o mesmo. Testado com romaneio sintético (canvas + OCR real
+  e PDF gerado): 4/4 produtos, preço e total ignorados; sem cabeçalho, fallback OK.
 - **PASSO 1 (principal)** — linha começa com: `Código(4-6 díg.) Cor(2-4, pode ter letra) Referência`
   Ex.: `00219 337 B074C B074C - CALCINHA...` e `03121 207 F500 F500- SHORT SAIA...`
 - **PASSO 2 (complemento, só nas linhas que o passo 1 não reconheceu)** — acha a referência e
