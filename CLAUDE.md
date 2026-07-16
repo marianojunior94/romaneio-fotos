@@ -73,6 +73,15 @@ BAIXAR (zip/galeria): https://artstilo-ecommerce-production.up.railway.app/fotos
   colunas — preços à direita ficam fora do alcance). Linhas não resolvidas caem nos
   passos 1 e 2; dedupe é o mesmo. Testado com romaneio sintético (canvas + OCR real
   e PDF gerado): 4/4 produtos, preço e total ignorados; sem cabeçalho, fallback OK.
+- **Pré-processamento da foto (17/07/2026, caso real "CONFERÊNCIA 2")** — o romaneio
+  oficial tem tabela com BORDAS desenhadas e cabeçalho com "Numero do Romaneio: R#####"
+  (que gerava produto falso). Antes do OCR: paraCanvas() redimensiona a imagem
+  (máx 2400px, mín 1400px) e limparBordas() apaga riscos contínuos longos (as bordas
+  da tabela) — sem isso o OCR vira sopa de caracteres. No passo 0, explodir() separa
+  células grudadas ("02501|025"); a coluna Produto (que repete a referência, ex.
+  "B467TR-SUTIA") serve de VOTO: se discordar da coluna Referência, vence a grafia
+  mais frequente no documento. quaseIgualRef() funde variações de OCR do mesmo
+  produto (BA467TR = B467TR com letra intrusa, mesma cor).
 - **PASSO 1 (principal)** — linha começa com: `Código(4-6 díg.) Cor(2-4, pode ter letra) Referência`
   Ex.: `00219 337 B074C B074C - CALCINHA...` e `03121 207 F500 F500- SHORT SAIA...`
 - **PASSO 2 (complemento, só nas linhas que o passo 1 não reconheceu)** — acha a referência e
@@ -145,5 +154,5 @@ BAIXAR (zip/galeria): https://artstilo-ecommerce-production.up.railway.app/fotos
 - Sempre manter TUDO em um único index.html (CSS e JS inline) — decisão do dono.
 - Depois de qualquer mudança no parser, testar mentalmente (ou com script) contra os dois
   layouts reais descritos acima.
-- Após editar, commitar e dar push — o Railway publica sozinho. Confirmar com o dono
-  antes do primeiro push se o git desta pasta acabou de ser configurado.
+- Após editar, commitar e dar push — o Railway publica sozinho. Em 17/07/2026 o dono
+  LIBEROU commit + push sem pedir confirmação a cada vez.

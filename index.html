@@ -345,7 +345,8 @@ async function readPdf(file){
         let off=0;
         o.s.split(/\s+/).filter(Boolean).forEach(p=>{
           const rel=o.s.indexOf(p,off); off=rel+p.length;
-          toks.push({t:p, x:o.x + (o.s.length ? (rel/o.s.length)*o.w : 0)});
+          const f0=o.s.length?rel/o.s.length:0, f1=o.s.length?(rel+p.length)/o.s.length:0;
+          toks.push({t:p, x:o.x+((f0+f1)/2)*o.w, x0:o.x+f0*o.w, x1:o.x+f1*o.w});
         });
       });
       if(toks.length) linhas.push(toks);
@@ -370,14 +371,85 @@ async function readPdf(file){
   return {texto:text, linhas};
 }
 
+/* Prepara a imagem para o OCR: redimensiona para um tamanho
+   bom de leitura (nem gigante, nem miúdo)                    */
+async function paraCanvas(source){
+  let img = source, w, h;
+  if(!(source instanceof HTMLCanvasElement)){
+    img = await new Promise((res,rej)=>{
+      const im=new Image();
+      im.onload=()=>res(im); im.onerror=rej;
+      im.src=URL.createObjectURL(source);
+    });
+  }
+  w = img.width; h = img.height;
+  const maior=Math.max(w,h), MAXL=2400, MINL=1400;
+  let esc=1;
+  if(maior>MAXL) esc=MAXL/maior;
+  else if(maior<MINL) esc=Math.min(2, MINL/maior);
+  if(esc===1 && source instanceof HTMLCanvasElement) return source;
+  const cv=document.createElement("canvas");
+  cv.width=Math.round(w*esc); cv.height=Math.round(h*esc);
+  cv.getContext("2d").drawImage(img,0,0,cv.width,cv.height);
+  if(img.src) URL.revokeObjectURL(img.src);
+  return cv;
+}
+
+/* APAGA AS BORDAS DA TABELA antes do OCR: riscos contínuos
+   longos (verticais e horizontais) viram branco. Sem isso, as
+   linhas da tabela grudam nas letras e o reconhecimento vira
+   sopa de caracteres (caso real do romaneio CONFERÊNCIA).    */
+function limparBordas(canvas){
+  const g=canvas.getContext("2d");
+  const W=canvas.width, H=canvas.height;
+  const im=g.getImageData(0,0,W,H), d=im.data;
+  const escuro=new Uint8Array(W*H);
+  for(let i=0;i<W*H;i++){
+    const lum=0.299*d[i*4]+0.587*d[i*4+1]+0.114*d[i*4+2];
+    escuro[i]=lum<165?1:0;
+  }
+  const LV=Math.max(35,Math.round(H*0.035));  // altura mínima p/ ser borda vertical
+  const LH=Math.max(50,Math.round(W*0.05));   // largura mínima p/ ser borda horizontal
+  const apagar=new Uint8Array(W*H);
+  for(let x=0;x<W;x++){                        // riscos verticais
+    let ini=-1;
+    for(let y=0;y<=H;y++){
+      const on=(y<H)&&escuro[y*W+x];
+      if(on&&ini<0) ini=y;
+      else if(!on&&ini>=0){ if(y-ini>=LV){ for(let k=ini;k<y;k++) apagar[k*W+x]=1; } ini=-1; }
+    }
+  }
+  for(let y=0;y<H;y++){                        // riscos horizontais
+    let ini=-1;
+    for(let x=0;x<=W;x++){
+      const on=(x<W)&&escuro[y*W+x];
+      if(on&&ini<0) ini=x;
+      else if(!on&&ini>=0){ if(x-ini>=LH){ for(let k=ini;k<x;k++) apagar[y*W+k]=1; } ini=-1; }
+    }
+  }
+  for(let i=0;i<W*H;i++){                      // apaga com 1px de folga
+    if(!apagar[i]) continue;
+    const x=i%W, y=(i-x)/W;
+    for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++){
+      const xx=x+dx, yy=y+dy;
+      if(xx<0||yy<0||xx>=W||yy>=H) continue;
+      const j=(yy*W+xx)*4; d[j]=d[j+1]=d[j+2]=255;
+    }
+  }
+  g.putImageData(im,0,0);
+  return canvas;
+}
+
 async function ocrCanvas(source){
+  setProgress(36,"Preparando a imagem…");
+  source = limparBordas(await paraCanvas(source));
   setProgress(38,"Reconhecendo o texto do romaneio…");
   const { data } = await Tesseract.recognize(source, "por", {
     logger:(m)=>{ if(m.status==="recognizing text") setProgress(38 + m.progress*35, "Reconhecendo texto… "+Math.round(m.progress*100)+"%"); }
   });
   const linhas=[];
   const addLinha=(words)=>{
-    const toks=(words||[]).map(w=>({t:(w.text||"").trim(), x:(w.bbox.x0+w.bbox.x1)/2})).filter(o=>o.t);
+    const toks=(words||[]).map(w=>({t:(w.text||"").trim(), x:(w.bbox.x0+w.bbox.x1)/2, x0:w.bbox.x0, x1:w.bbox.x1})).filter(o=>o.t);
     if(toks.length) linhas.push(toks);
   };
   if(data.lines && data.lines.length){
@@ -430,13 +502,29 @@ function cleanLine(l){
 }
 function cleanTok(t){ return t.replace(/^[^A-Za-z0-9]+|[^A-Za-z0-9]+$/g,""); }
 
+/* "BA467TR" e "B467TR" com a mesma cor = o MESMO produto lido
+   de dois jeitos pelo OCR (uma grafia é a outra com 1-2 letras
+   intrusas). Usado para não duplicar produtos.               */
+function ehSubsequencia(curto, longo){
+  let i=0;
+  for(const ch of longo){ if(i<curto.length && ch===curto[i]) i++; }
+  return i===curto.length;
+}
+function quaseIgualRef(a, b){
+  if(a===b) return true;
+  const curto=a.length<b.length?a:b, longo=a.length<b.length?b:a;
+  return (longo.length-curto.length)<=2 && ehSubsequencia(curto, longo);
+}
+
 function extractPairs(text, linhasXY){
   const linhasRaw = text.split(/\r?\n/);
   const pares = [];
   const seen = new Set();
   const add = (ref,cor)=>{
     const key=ref+"_"+cor;
-    if(!seen.has(key)){ seen.add(key); pares.push({ref,cor}); }
+    if(seen.has(key)) return;
+    if(pares.some(p=>p.cor===cor && quaseIgualRef(p.ref, ref))) return;
+    seen.add(key); pares.push({ref,cor});
   };
 
   /* PASSO 0 — LEITURA POR COLUNAS (entende o romaneio de verdade):
@@ -449,10 +537,25 @@ function extractPairs(text, linhasXY){
      segurança), e tudo passa pelo mesmo dedupe.                  */
   if(linhasXY && linhasXY.length){
     const normT = s=>s.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^A-Z0-9]/g,"");
+    /* as BORDAS da tabela grudam células vizinhas numa palavra só
+       ("02501|025", "Código|Cor") — explode em pedaços, estimando
+       a posição de cada um dentro da palavra                      */
+    const explodir=(o)=>{
+      const partes=o.t.split(/[^A-Za-z0-9]+/).filter(Boolean);
+      if(partes.length<=1) return [o];
+      const x0=(o.x0!=null)?o.x0:o.x, x1=(o.x1!=null)?o.x1:o.x, larg=x1-x0;
+      const res=[]; let off=0;
+      partes.forEach(p=>{
+        const rel=o.t.indexOf(p,off); off=rel+p.length;
+        res.push({t:p, x: x0 + (o.t.length ? ((rel+p.length/2)/o.t.length)*larg : 0)});
+      });
+      return res;
+    };
+    const linhasTok = linhasXY.map(l=>[].concat.apply([], l.map(explodir)));
     let colCor=null, colRef=null, headerIdx=-1;
-    for(let li=0; li<linhasXY.length && headerIdx<0; li++){
+    for(let li=0; li<linhasTok.length && headerIdx<0; li++){
       let xc=null, xr=null;
-      linhasXY[li].forEach(o=>{
+      linhasTok[li].forEach(o=>{
         const n=normT(o.t);
         if(n==="COR"||n==="CORES") xc=o.x;
         else if(/^REF/.test(n) && n.length<=12) xr=o.x;
@@ -461,9 +564,9 @@ function extractPairs(text, linhasXY){
     }
     if(headerIdx>=0){
       const LIM = Math.abs(colRef-colCor);   // tolerância: a distância entre as colunas
-      for(let li=headerIdx+1; li<linhasXY.length; li++){
+      for(let li=headerIdx+1; li<linhasTok.length; li++){
         let melhorCor=null, melhorRef=null;
-        linhasXY[li].forEach(o=>{
+        linhasTok[li].forEach(o=>{
           const t=cleanTok(o.t);
           if(!t) return;
           const dc=Math.abs(o.x-colCor), dr=Math.abs(o.x-colRef);
@@ -475,7 +578,22 @@ function extractPairs(text, linhasXY){
             if(r && (!melhorRef || dr<melhorRef.d)) melhorRef={r, d:dr};
           }
         });
-        if(melhorCor && melhorRef) add(melhorRef.r, melhorCor.c);
+        /* a coluna Produto repete a referência ("B467TR-SUTIA…");
+           se discordar da coluna Referência, vence a grafia que
+           aparece MAIS VEZES no documento (conserta letra intrusa
+           do OCR, ex.: "BA467TR" -> "B467TR")                   */
+        let refProd=null;
+        linhasXY[li].forEach(o=>{
+          const m=o.t.match(/^([A-Za-z]{1,4}[0-9OIl]{2,4}[A-Za-z]{0,3})-/);
+          if(m && !refProd) refProd=normRef(m[1]);
+        });
+        let refFinal = melhorRef ? melhorRef.r : refProd;
+        if(melhorRef && refProd && refProd!==melhorRef.r){
+          const TXT=text.toUpperCase();
+          const conta=(s)=>TXT.split(s.toUpperCase()).length-1;
+          if(conta(refProd) > conta(melhorRef.r)) refFinal=refProd;
+        }
+        if(melhorCor && refFinal) add(refFinal, melhorCor.c);
       }
     }
   }
