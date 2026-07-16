@@ -422,8 +422,11 @@ function extractPairs(text){
   /* PASSO 2 — complemento nas linhas restantes (OCR imperfeito
      ou outros layouts): acha a referência na linha e usa como
      cor o token imediatamente ANTES dela (layout ART STILO)
-     ou, se não servir, o token logo DEPOIS.                   */
-  const REF_TOK = /^[A-Za-z]{1,4}[0-9OIl]{2,6}[A-Za-z]{0,3}$/;
+     ou, se não servir, o token logo DEPOIS.
+     Guardas anti-lixo: referência com 5-6 dígitos é preço ou
+     nº de pedido (R$524,19 virava "R52419"), e a cor precisa
+     EXISTIR na tabela oficial de cores.                       */
+  const REF_TOK = /^[A-Za-z]{1,4}[0-9OIl]{2,4}[A-Za-z]{0,3}$/;
   for(let li=0; li<linhasRaw.length; li++){
     if(lidas.has(li)) continue;
     const linha = cleanLine(linhasRaw[li]);
@@ -440,7 +443,11 @@ function extractPairs(text){
       // cor antes (não pode ser o Código, que tem 4-6 dígitos)
       let cor = null;
       if(i>0 && toks[i-1].length<=4 && !/^\d{5,6}$/.test(toks[i-1])) cor = normCor(toks[i-1]);
-      if(!cor && i+1<toks.length) cor = normCor(toks[i+1]);
+      if(cor && !CORES[cor]) cor = null;               // só cor que existe na tabela
+      if(!cor && i+1<toks.length){
+        cor = normCor(toks[i+1]);
+        if(cor && !CORES[cor]) cor = null;
+      }
       if(!cor) continue;
       add(ref,cor);
       break; // um par por linha

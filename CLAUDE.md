@@ -68,6 +68,10 @@ BAIXAR (zip/galeria): https://artstilo-ecommerce-production.up.railway.app/fotos
   Ex.: `00219 337 B074C B074C - CALCINHA...` e `03121 207 F500 F500- SHORT SAIA...`
 - **PASSO 2 (complemento, só nas linhas que o passo 1 não reconheceu)** — acha a referência e
   usa como cor o token imediatamente ANTES dela; se não servir, o token DEPOIS.
+  Guardas anti-lixo (17/07/2026, caso real: preço "R$524,19" virou produto "R52419/R0"):
+  referência do passo 2 só com 2-4 dígitos (5-6 é preço/nº de pedido) e a cor precisa
+  EXISTIR na tabela CORES. Cores com letra (A07) no início da linha não são confundidas
+  com referência (consulta a tabela; caso do recorte de foto só com colunas cor+ref).
 - Produto repetido (vários tamanhos) conta **uma vez só** (dedupe por ref_cor).
 - Correções de OCR: O→0 e I/l→1 na parte numérica; bordas de tabela (|, !, etc.) viram espaço.
 - Testado com 2 romaneios reais: PDF do Getúlio (24 pares únicos, ref B074C etc.) e foto do
