@@ -3,63 +3,96 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Art Estilo Praia — Fotos pelo Romaneio</title>
+<title>Art Stilo — Fotos pelo Romaneio</title>
+<meta name="theme-color" content="#0a5f68">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.1.1/tesseract.min.js"></script>
 <style>
   :root{
-    --ocean:#0a8ea0; --ocean-dark:#076675; --coral:#ff6f61; --sand:#f6efe3;
-    --ink:#12333a; --muted:#5c7981; --line:#e2ddd0; --white:#fff;
-    --shadow:0 10px 30px rgba(7,102,117,.12); --radius:16px;
+    --ocean:#0e8691; --ocean-dark:#0a5f68; --turq:#15b5c2; --coral:#ff6f5e;
+    --gold:#ffd166; --sand:#faf3e7; --ink:#0f2e33; --muted:#54767d;
+    --line:#e3ded1; --white:#fff;
+    --shadow:0 12px 32px rgba(10,95,104,.14);
+    --radius:18px;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    color:var(--ink);background:linear-gradient(160deg,#eaf7f9 0%,#f6efe3 100%);min-height:100vh;-webkit-font-smoothing:antialiased}
+  body{
+    font-family:'Poppins',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1000px 500px at 110% -10%, rgba(21,181,194,.16), transparent 60%),
+      radial-gradient(800px 400px at -10% 110%, rgba(255,209,102,.20), transparent 60%),
+      linear-gradient(165deg,#e9f8fa 0%, var(--sand) 100%);
+    min-height:100vh;-webkit-font-smoothing:antialiased;
+  }
   .wrap{max-width:1120px;margin:0 auto;padding:0 20px}
-  header.topbar{background:var(--white);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10;box-shadow:0 2px 10px rgba(7,102,117,.05)}
-  .topbar-inner{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0}
+
+  /* ---------- Topbar ---------- */
+  header.topbar{
+    background:linear-gradient(135deg,var(--ocean-dark) 0%, var(--ocean) 55%, var(--turq) 100%);
+    position:sticky;top:0;z-index:10;box-shadow:0 4px 18px rgba(10,95,104,.25);
+  }
+  .topbar-inner{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 0}
   .brand-row{display:flex;align-items:center;gap:12px}
-  .logo-sm{width:42px;height:42px;border-radius:50%;background:radial-gradient(circle at 30% 30%,var(--ocean),var(--ocean-dark));display:flex;align-items:center;justify-content:center;color:#fff;font-size:21px}
-  .brand-row b{font-size:16px;display:block}
-  .brand-row small{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase}
-  .btn{cursor:pointer;border:none;border-radius:12px;font-size:15px;font-weight:600;padding:13px 18px;transition:transform .05s,box-shadow .2s,background .2s,filter .2s}
+  .logo-slot{display:flex;align-items:center;justify-content:center}
+  .logo-slot img,.logo-slot svg{display:block;border-radius:12px}
+  .brand-row .bname{color:#fff;line-height:1.15}
+  .brand-row .bname b{font-size:17px;font-weight:700;letter-spacing:.5px;display:block}
+  .brand-row .bname small{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.85)}
+  .btn{cursor:pointer;border:none;border-radius:999px;font-size:15px;font-weight:600;
+    font-family:inherit;padding:13px 20px;transition:transform .05s,box-shadow .2s,background .2s,filter .2s}
   .btn:active{transform:translateY(1px)}
   .btn[disabled]{opacity:.55;cursor:not-allowed}
-  .btn-primary{background:var(--ocean);color:#fff;box-shadow:0 6px 16px rgba(10,142,160,.35)}
+  .btn-primary{background:var(--ocean);color:#fff;box-shadow:0 6px 18px rgba(14,134,145,.4)}
   .btn-primary:hover{background:var(--ocean-dark)}
-  .btn-coral{background:var(--coral);color:#fff;box-shadow:0 6px 16px rgba(255,111,97,.32)}
-  .btn-coral:hover{filter:brightness(.95)}
+  .btn-coral{background:linear-gradient(135deg,#ff8a70,var(--coral));color:#fff;box-shadow:0 6px 18px rgba(255,111,94,.38)}
+  .btn-coral:hover{filter:brightness(.96)}
+  .btn-gold{background:linear-gradient(135deg,#ffe29e,var(--gold));color:#6b4d00;box-shadow:0 6px 18px rgba(255,209,102,.45)}
+  .btn-gold:hover{filter:brightness(.97)}
   .btn-ghost{background:transparent;color:var(--ocean-dark);border:1.5px solid var(--line)}
   .btn-ghost:hover{border-color:var(--ocean);background:#f0fafc}
+  .topbar .btn-ghost{color:#fff;border-color:rgba(255,255,255,.45)}
+  .topbar .btn-ghost:hover{background:rgba(255,255,255,.12);border-color:#fff}
 
   /* ---------- Upload ---------- */
-  #uploadView{min-height:calc(100vh - 72px);display:flex;align-items:center;justify-content:center;padding:32px 20px}
-  .panel{width:100%;max-width:560px;background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:34px 30px;border:1px solid var(--line);text-align:center}
-  .panel h1{font-size:23px;margin-bottom:6px}
-  .panel p.lead{color:var(--muted);font-size:14px;line-height:1.55;margin-bottom:22px}
-  .drop{border:2px dashed #b8d7dc;border-radius:14px;background:#f6fbfc;padding:34px 20px;cursor:pointer;transition:border-color .2s,background .2s;display:block}
-  .drop.drag{border-color:var(--ocean);background:#e9f7f9}
-  .drop .ic{font-size:40px;margin-bottom:8px}
+  #uploadView{min-height:calc(100vh - 70px);display:flex;align-items:center;justify-content:center;padding:32px 20px}
+  .panel{width:100%;max-width:560px;background:var(--white);border-radius:22px;box-shadow:var(--shadow);padding:0 0 30px;border:1px solid var(--line);text-align:center;overflow:hidden}
+  .panel .hero{
+    background:linear-gradient(135deg,var(--ocean-dark) 0%, var(--ocean) 55%, var(--turq) 100%);
+    padding:30px 30px 8px;position:relative;color:#fff;
+  }
+  .panel .hero .logo-slot{justify-content:center;margin-bottom:10px}
+  .panel .hero h1{font-size:22px;font-weight:700;letter-spacing:.3px}
+  .panel .hero .tagline{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.85);margin-top:2px}
+  .panel .wave{display:block;margin-top:-1px;background:linear-gradient(135deg,var(--ocean-dark) 0%, var(--ocean) 55%, var(--turq) 100%)}
+  .panel .inner{padding:8px 30px 0}
+  .panel p.lead{color:var(--muted);font-size:14px;line-height:1.55;margin:10px 0 20px}
+  .drop{border:2px dashed #a8d4da;border-radius:16px;background:#f4fbfc;padding:30px 20px;cursor:pointer;transition:border-color .2s,background .2s;display:block}
+  .drop.drag{border-color:var(--ocean);background:#e7f7f9}
+  .drop .ic{font-size:38px;margin-bottom:6px}
   .drop b{display:block;font-size:15px}
   .drop span{display:block;font-size:13px;color:var(--muted);margin-top:4px}
-  .filechip{display:none;align-items:center;justify-content:center;gap:10px;margin-top:14px;font-size:14px;color:var(--ocean-dark);background:#eef7f8;border:1px solid var(--line);padding:10px 14px;border-radius:10px}
+  .filechip{display:none;align-items:center;justify-content:center;gap:10px;margin-top:14px;font-size:14px;color:var(--ocean-dark);background:#eef7f8;border:1px solid var(--line);padding:10px 14px;border-radius:12px}
   .row-btns{display:flex;flex-direction:column;gap:10px;margin-top:18px}
   .sep{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;margin:16px 0 4px}
   .sep:before,.sep:after{content:"";flex:1;height:1px;background:var(--line)}
   .manual{display:flex;gap:8px;margin-top:6px}
-  .manual input{flex:1;padding:12px 13px;border:1.5px solid var(--line);border-radius:12px;font-size:14px;background:#fbfaf6}
-  .manual input:focus{outline:none;border-color:var(--ocean);box-shadow:0 0 0 3px rgba(10,142,160,.15);background:#fff}
+  .manual input{flex:1;padding:12px 14px;border:1.5px solid var(--line);border-radius:999px;font-size:14px;background:#fbfaf6;font-family:inherit;min-width:0}
+  .manual input:focus{outline:none;border-color:var(--ocean);box-shadow:0 0 0 3px rgba(14,134,145,.15);background:#fff}
   .progress{display:none;margin-top:18px;text-align:left}
   .progress .bar{height:8px;background:#e7eef0;border-radius:99px;overflow:hidden}
-  .progress .fill{height:100%;width:0;background:linear-gradient(90deg,var(--ocean),var(--coral));transition:width .3s}
+  .progress .fill{height:100%;width:0;background:linear-gradient(90deg,var(--turq),var(--coral));transition:width .3s}
   .progress .lbl{font-size:13px;color:var(--muted);margin-top:8px}
-  .note{font-size:12px;color:var(--muted);margin-top:16px;line-height:1.5}
+  .note{font-size:12px;color:var(--muted);margin-top:16px;line-height:1.5;padding:0 30px}
 
   /* ---------- Resultados ---------- */
   #appView{display:none}
   .result-head{padding:24px 0 4px}
-  .result-head h2{font-size:23px}
+  .result-head h2{font-size:23px;font-weight:700}
   .result-head .meta{color:var(--muted);font-size:14px;margin-top:4px}
   .toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:14px 0 20px}
   .toolbar .count{font-size:14px;color:var(--muted)}
@@ -70,30 +103,37 @@
   .prod .imgbox{position:relative;aspect-ratio:4/5;background:#eef4f5;overflow:hidden}
   .prod .imgbox img{width:100%;height:100%;object-fit:cover;display:block}
   .prod .imgbox .spin{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px}
-  .badge{position:absolute;top:10px;left:10px;background:rgba(18,51,58,.82);color:#fff;font-size:11px;padding:4px 9px;border-radius:99px;letter-spacing:.5px;z-index:2}
-  .badge2{position:absolute;top:10px;right:10px;background:var(--coral);color:#fff;font-size:11px;padding:4px 9px;border-radius:99px;z-index:2}
-  .thumbs{display:flex;gap:6px;padding:10px 14px 0}
-  .thumbs img{width:44px;height:44px;object-fit:cover;border-radius:8px;border:2px solid transparent;cursor:pointer}
+  .badge{position:absolute;top:10px;left:10px;background:rgba(10,95,104,.88);color:#fff;font-size:11px;padding:4px 10px;border-radius:99px;letter-spacing:.5px;z-index:2;font-weight:600}
+  .badge2{position:absolute;top:10px;right:10px;background:linear-gradient(135deg,#ff8a70,var(--coral));color:#fff;font-size:11px;padding:4px 10px;border-radius:99px;z-index:2;font-weight:600}
+  .thumbs{display:flex;gap:6px;padding:10px 14px 0;flex-wrap:wrap}
+  .thumbs img{width:44px;height:44px;object-fit:cover;border-radius:10px;border:2px solid transparent;cursor:pointer}
   .thumbs img.sel{border-color:var(--ocean)}
   .prod .info{padding:12px 14px 14px;display:flex;flex-direction:column;gap:8px;flex:1}
   .prod .info b{font-size:15px;line-height:1.3}
   .prod .info .sku{font-size:12px;color:var(--muted)}
-  .prod .info .rowb{margin-top:auto;display:flex;gap:8px}
-  .btn-sm{padding:10px 12px;font-size:13px;flex:1}
+  .prod .info .rowb{margin-top:auto;display:flex;gap:8px;flex-wrap:wrap}
+  .btn-sm{padding:10px 12px;font-size:13px;flex:1;white-space:nowrap}
   .btn-dl{background:var(--ocean);color:#fff}
   .btn-dl:hover{background:var(--ocean-dark)}
-  .unmatched{background:#fff6f4;border:1px solid #ffd9d2;border-radius:12px;padding:14px 16px;margin:6px 0 26px;font-size:13px;color:#a2453b}
+  .unmatched{background:#fff6f4;border:1px solid #ffd9d2;border-radius:14px;padding:14px 16px;margin:6px 0 26px;font-size:13px;color:#a2453b}
   .unmatched b{color:#8a352c}
   .readbox{margin:6px 0 40px}
   .readbox summary{cursor:pointer;font-size:13px;color:var(--muted);user-select:none}
-  .readbox pre{white-space:pre-wrap;word-break:break-word;background:#0f2b31;color:#cfe9ec;padding:14px;border-radius:10px;font-size:12px;margin-top:10px;max-height:220px;overflow:auto}
+  .readbox pre{white-space:pre-wrap;word-break:break-word;background:#0f2b31;color:#cfe9ec;padding:14px;border-radius:12px;font-size:12px;margin-top:10px;max-height:220px;overflow:auto}
   .empty{text-align:center;padding:50px 20px;color:var(--muted)}
   .empty .ic{font-size:44px;margin-bottom:10px}
 
-  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(120px);background:var(--ink);color:#fff;padding:13px 20px;border-radius:12px;font-size:14px;box-shadow:var(--shadow);opacity:0;transition:transform .3s,opacity .3s;z-index:50;max-width:90vw;text-align:center}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(120px);background:var(--ink);color:#fff;padding:13px 20px;border-radius:14px;font-size:14px;box-shadow:var(--shadow);opacity:0;transition:transform .3s,opacity .3s;z-index:50;max-width:90vw;text-align:center}
   .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
   footer{text-align:center;color:var(--muted);font-size:12px;padding:24px 0 40px}
-  @media(max-width:520px){.panel{padding:26px 20px}.result-head h2{font-size:20px}}
+  footer b{color:var(--ocean-dark)}
+  @media(max-width:520px){
+    .panel .hero{padding:24px 20px 6px}
+    .panel .inner{padding:8px 20px 0}
+    .result-head h2{font-size:20px}
+    .toolbar .actions{width:100%}
+    .toolbar .actions .btn{flex:1}
+  }
 </style>
 </head>
 <body>
@@ -101,8 +141,8 @@
 <header class="topbar">
   <div class="wrap topbar-inner">
     <div class="brand-row">
-      <div class="logo-sm">&#127958;</div>
-      <div><b>Art Estilo Praia</b><small>Fotos pelo Romaneio</small></div>
+      <span class="logo-slot" data-logo="44"></span>
+      <div class="bname"><b>ART STILO</b><small>Praia &amp; Fitness</small></div>
     </div>
     <button class="btn btn-ghost" id="restartBtn" style="display:none">Enviar outro</button>
   </div>
@@ -111,30 +151,40 @@
 <!-- ===================== ENVIO ===================== -->
 <section id="uploadView">
   <div class="panel">
-    <h1>Baixe as fotos pelo romaneio</h1>
-    <p class="lead">Envie a <b>foto</b> ou o <b>PDF</b> do seu romaneio. O app identifica a <b>referência</b> e o <b>código da cor</b> de cada produto e busca todas as fotos disponíveis no acervo.</p>
-
-    <label class="drop" id="drop">
-      <div class="ic">&#128228;</div>
-      <b>Toque para escolher o arquivo</b>
-      <span>ou arraste aqui — JPG, PNG ou PDF</span>
-      <input id="fileInput" type="file" accept="image/*,application/pdf,.pdf" hidden>
-    </label>
-    <div class="filechip" id="fileChip"><span id="fileName"></span></div>
-
-    <div class="row-btns">
-      <button class="btn btn-primary" id="processBtn" disabled>Ler romaneio e buscar fotos</button>
+    <div class="hero">
+      <span class="logo-slot" data-logo="74"></span>
+      <h1>Fotos dos seus produtos</h1>
+      <div class="tagline">Praia &amp; Fitness · Área da Revendedora</div>
     </div>
+    <svg class="wave" viewBox="0 0 560 30" preserveAspectRatio="none" style="width:100%;height:30px">
+      <path d="M0,12 C90,32 180,-6 280,12 C380,30 470,-4 560,14 L560,30 L0,30 Z" fill="#ffffff"></path>
+      <path d="M0,16 C90,34 180,0 280,16 C380,32 470,2 560,18 L560,30 L0,30 Z" fill="#ffffff" opacity=".6"></path>
+    </svg>
+    <div class="inner">
+      <p class="lead">Envie a <b>foto</b> ou o <b>PDF</b> do seu romaneio. Identificamos cada <b>referência + cor</b> e trazemos todas as fotos para você salvar no celular.</p>
 
-    <div class="sep">ou digite os códigos manualmente</div>
-    <div class="manual">
-      <input id="manualInput" placeholder="Ex.: B074C 337, F001 002" autocomplete="off" spellcheck="false">
-      <button class="btn btn-primary" id="manualBtn" style="padding:12px 16px">Buscar</button>
-    </div>
+      <label class="drop" id="drop">
+        <div class="ic">&#128228;</div>
+        <b>Toque para escolher o arquivo</b>
+        <span>ou arraste aqui — JPG, PNG ou PDF</span>
+        <input id="fileInput" type="file" accept="image/*,application/pdf,.pdf" hidden>
+      </label>
+      <div class="filechip" id="fileChip"><span id="fileName"></span></div>
 
-    <div class="progress" id="progress">
-      <div class="bar"><div class="fill" id="fill"></div></div>
-      <div class="lbl" id="progLbl">Lendo o documento…</div>
+      <div class="row-btns">
+        <button class="btn btn-primary" id="processBtn" disabled>Ler romaneio e buscar fotos</button>
+      </div>
+
+      <div class="sep">ou digite os códigos manualmente</div>
+      <div class="manual">
+        <input id="manualInput" placeholder="Ex.: F500 207, F518 A07" autocomplete="off" spellcheck="false">
+        <button class="btn btn-primary" id="manualBtn" style="padding:12px 18px">Buscar</button>
+      </div>
+
+      <div class="progress" id="progress">
+        <div class="bar"><div class="fill" id="fill"></div></div>
+        <div class="lbl" id="progLbl">Lendo o documento…</div>
+      </div>
     </div>
 
     <p class="note">Tudo é processado no seu próprio navegador. A leitura de fotos usa reconhecimento de texto (OCR) e pode levar alguns segundos.</p>
@@ -151,6 +201,7 @@
     <div class="toolbar">
       <div class="count" id="countLabel"></div>
       <div class="actions">
+        <button class="btn btn-gold" id="saveAllGallery" style="display:none">Salvar todas na galeria</button>
         <button class="btn btn-coral" id="downloadAll">&#8681; Baixar todas (.zip)</button>
       </div>
     </div>
@@ -158,7 +209,7 @@
     <div class="grid" id="grid"></div>
     <div class="readbox" id="readBox"></div>
   </div>
-  <footer>Art Estilo Praia &middot; Fotos geradas a partir do romaneio, em alta qualidade.</footer>
+  <footer><b>ART STILO</b> · Praia &amp; Fitness — Fotos em alta qualidade dos produtos do seu romaneio.</footer>
 </section>
 
 <div class="toast" id="toast"></div>
@@ -167,19 +218,39 @@
 /* =========================================================
    CONFIGURAÇÃO DO ACERVO DE FOTOS
    Padrão do link:  BASE + REFERENCIA_COR-SEQUENCIA.jpg
-   Ex.: https://.../fotos/F001_002-1.jpg  (ref F001, cor 002, foto 1)
+   Ex.: https://.../fotos/F500_207-1.jpg (ref F500, cor 207, foto 1)
    O app testa a sequência 1, 2, 3… e para na primeira que
    não existir. MAX_SEQ é só um teto de segurança.
    ========================================================= */
 const FOTO_BASE = "https://artstilo-ecommerce-production.up.railway.app/fotos/";
 const FOTO_EXT  = ".jpg";
 const MAX_SEQ   = 30;   // teto de fotos por produto
-const COR_DIGITOS = 3;  // código da cor com zeros à esquerda (002)
+const COR_DIGITOS = 3;  // cor numérica com zeros à esquerda (207, 002)
+
+/* LOGO OFICIAL (opcional):
+   coloque aqui a URL do logo da marca (ex.: "/logo.png" ou
+   "https://seusite.com.br/logo.png") para substituir o
+   emblema desenhado. Deixe "" para usar o emblema.        */
+const LOGO_URL = "";
 
 function fotoUrl(ref, cor, seq){ return FOTO_BASE + ref + "_" + cor + "-" + seq + FOTO_EXT; }
 
-/* Romaneio de exemplo usado no botão "Buscar" manual e testes.
-   Use referências reais do seu acervo para ver fotos de verdade. */
+/* ---------- Logo (emblema SVG: sol, onda e areia) ---------- */
+let _logoN = 0;
+function logoHtml(h){
+  if(LOGO_URL) return '<img src="'+LOGO_URL+'" alt="Art Stilo" style="height:'+h+'px">';
+  const id = "lg" + (_logoN++);
+  return '<svg width="'+h+'" height="'+h+'" viewBox="0 0 48 48" role="img" aria-label="Art Stilo">'
+    +'<defs><linearGradient id="'+id+'a" x1="0" y1="0" x2="1" y2="1">'
+    +'<stop offset="0" stop-color="#15b5c2"/><stop offset="1" stop-color="#0a5f68"/>'
+    +'</linearGradient></defs>'
+    +'<rect x="1.5" y="1.5" width="45" height="45" rx="14" fill="url(#'+id+'a)" stroke="rgba(255,255,255,.35)" stroke-width="1.5"/>'
+    +'<circle cx="31.5" cy="15" r="6" fill="#ffd166"/>'
+    +'<path d="M3 30 q6 -6 11 0 t11 0 t11 0 t9 0 v9 a6 6 0 0 1 -6 6 h-30 a6 6 0 0 1 -6 -6 z" fill="rgba(255,255,255,.92)"/>'
+    +'<path d="M3 36 q6 -5 11 0 t11 0 t11 0 t9 0 v3 a6 6 0 0 1 -6 6 h-30 a6 6 0 0 1 -6 -6 z" fill="#ff6f5e"/>'
+    +'</svg>';
+}
+document.querySelectorAll(".logo-slot").forEach(el=>{ el.innerHTML = logoHtml(el.dataset.logo||44); });
 
 /* ---------- Configuração das bibliotecas ---------- */
 if (window.pdfjsLib) {
@@ -192,7 +263,7 @@ const $ = (s)=>document.querySelector(s);
 let selectedFile = null;
 let lastProducts = [];   // [{ref, cor, fotos:[urls]}]
 
-function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("show");clearTimeout(t._tm);t._tm=setTimeout(()=>t.classList.remove("show"),2800);}
+function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("show");clearTimeout(t._tm);t._tm=setTimeout(()=>t.classList.remove("show"),3200);}
 function setProgress(pct,label){$("#progress").style.display="block";$("#fill").style.width=Math.round(pct)+"%";if(label)$("#progLbl").textContent=label;}
 function hideProgress(){$("#progress").style.display="none";$("#fill").style.width="0";}
 
@@ -251,12 +322,14 @@ async function ocrCanvas(source){
 
 /* =========================================================
    2) EXTRAIR PARES (REFERÊNCIA, COR) DO TEXTO
-   Referência: letra(s) + números  (ex.: F001)
-   Cor: número na coluna COR (ex.: 002) — normalizado com zeros
-   Produto repetido no romaneio conta UMA vez só.
+   Layout ART STILO: Código | Cor | Referência | Produto...
+   - a COR vem ANTES da referência (ex.: 03121 207 F500)
+   - cor pode ter letra (ex.: A07)
+   - bordas de tabela viram símbolos no OCR -> viram espaço
+   - produto repetido (tamanhos) conta UMA vez só
    ========================================================= */
 function normRef(tok){
-  // aceita referências como F001, B074C, B461 (letras + números + letras opcionais)
+  // aceita referências como F500, B074C, B461 (letras + números + letras opcionais)
   // e corrige confusões comuns do OCR na parte numérica (O->0, l/I->1)
   const m = tok.toUpperCase().match(/^([A-Z]{1,4})[\s\-_.]*([0-9OIL]{2,6})([A-Z]{0,3})$/i);
   if(!m) return null;
@@ -267,13 +340,23 @@ function normRef(tok){
   return letras + num + sufixo;
 }
 function normCor(tok){
-  const num = tok.toUpperCase().replace(/O/g,"0").replace(/[IL]/g,"1");
-  if(!/^\d{1,4}$/.test(num)) return null;
-  return num.padStart(COR_DIGITOS,"0");
+  // cor numérica (207, 002) ou com letra (A07)
+  const t = tok.toUpperCase();
+  const m = t.match(/^([A-Z])?([0-9OIL]{1,4})$/);
+  if(!m) return null;
+  const letra = m[1]||"";
+  const num = m[2].replace(/O/g,"0").replace(/[IL]/g,"1");
+  if(letra) return letra + num;                 // A07 fica como está
+  return num.padStart(COR_DIGITOS,"0");         // 7 -> 007, 07 -> 007
 }
+/* limpa símbolos de borda de tabela e pontuação que o OCR gera */
+function cleanLine(l){
+  return l.replace(/[|¦!;:\[\]{}()<>«»"“”'‘’`´~^*=+#%$&@]/g," ").replace(/\s+/g," ").trim();
+}
+function cleanTok(t){ return t.replace(/^[^A-Za-z0-9]+|[^A-Za-z0-9]+$/g,""); }
 
 function extractPairs(text){
-  const linhas = text.split(/\r?\n/);
+  const linhasRaw = text.split(/\r?\n/);
   const pares = [];
   const seen = new Set();
   const add = (ref,cor)=>{
@@ -281,31 +364,36 @@ function extractPairs(text){
     if(!seen.has(key)){ seen.add(key); pares.push({ref,cor}); }
   };
 
-  /* PASSO 1 — layout do romaneio ART STILO:
-     início da linha = Código | Cor | Referência
-     Ex.: "00219 337 B074C B074C - CALCINHA ..."      */
-  const RE_LINHA = /^\s*([0-9OIl]{4,6})\s+([0-9OIl]{2,4})\s+([A-Za-z]{1,4}[0-9OIl]{2,6}[A-Za-z]{0,3})\b/;
-  for(const linha of linhas){
+  /* PASSO 1 — layout ART STILO no início da linha:
+     Código(4-6 díg.) Cor(2-4, pode ter letra) Referência
+     Ex.: "03121 207 F500 F500- SHORT SAIA ..."
+          "00219 337 B074C B074C - CALCINHA ..."          */
+  const RE_LINHA = /^\s*([0-9OIl]{4,6})\s+([A-Za-z]?[0-9OIl]{2,4})\s+([A-Za-z]{1,4}[0-9OIl]{2,6}[A-Za-z]{0,3})(?![A-Za-z0-9])/;
+  const lidas = new Set();  // linhas já reconhecidas pelo layout principal
+  linhasRaw.forEach((raw,li)=>{
+    const linha = cleanLine(raw);
     const m = linha.match(RE_LINHA);
-    if(!m) continue;
+    if(!m) return;
     const ref = normRef(m[3]), cor = normCor(m[2]);
-    if(ref && cor) add(ref,cor);
-  }
-  if(pares.length) return pares;   // layout reconhecido — usa só ele
-
-  /* PASSO 2 — reserva (outros layouts): referência seguida
-     do código da cor na mesma linha. Ex.: "F001 002 ..."   */
-  const RE_REF = /\b([A-Za-z]{1,4}[\s\-_.]?[0-9OIl]{2,6}[A-Za-z]{0,3})\b/g;
-  for(const linha of linhas){
-    RE_REF.lastIndex = 0;
-    let m;
-    while((m = RE_REF.exec(linha)) !== null){
-      const ref = normRef(m[1]);
+    if(ref && cor){ add(ref,cor); lidas.add(li); }
+  });
+  /* PASSO 2 — complemento nas linhas restantes (OCR imperfeito
+     ou outros layouts): acha a referência na linha e usa como
+     cor o token imediatamente ANTES dela (layout ART STILO)
+     ou, se não servir, o token logo DEPOIS.                   */
+  const REF_TOK = /^[A-Za-z]{1,4}[0-9OIl]{2,6}[A-Za-z]{0,3}$/;
+  for(let li=0; li<linhasRaw.length; li++){
+    if(lidas.has(li)) continue;
+    const linha = cleanLine(linhasRaw[li]);
+    const toks = linha.split(" ").map(cleanTok).filter(Boolean);
+    for(let i=0;i<toks.length;i++){
+      if(!REF_TOK.test(toks[i])) continue;
+      const ref = normRef(toks[i]);
       if(!ref) continue;
-      const resto = linha.slice(m.index + m[1].length);
-      const corM = resto.match(/\b([0-9OIl]{1,4})\b/);
-      if(!corM) continue;
-      const cor = normCor(corM[1]);
+      // cor antes (não pode ser o Código, que tem 4-6 dígitos)
+      let cor = null;
+      if(i>0 && toks[i-1].length<=4 && !/^\d{5,6}$/.test(toks[i-1])) cor = normCor(toks[i-1]);
+      if(!cor && i+1<toks.length) cor = normCor(toks[i+1]);
       if(!cor) continue;
       add(ref,cor);
       break; // um par por linha
@@ -314,10 +402,10 @@ function extractPairs(text){
   return pares;
 }
 
-/* Entrada manual: "F001 002, F003 015" */
+/* Entrada manual: "F500 207, F518 A07" */
 function parseManual(str){
   const pares=[]; const seen=new Set();
-  const re=/([A-Za-z]{1,4}\s?\d{2,6}[A-Za-z]{0,3})[\s\-_/;:]+(\d{1,4})/g;
+  const re=/([A-Za-z]{1,4}\s?\d{2,6}[A-Za-z]{0,3})[\s\-_/;:,]+([A-Za-z]?\d{1,4})/g;
   let m;
   while((m=re.exec(str))!==null){
     const ref=normRef(m[1].replace(/\s/g,"")), cor=normCor(m[2]);
@@ -332,7 +420,6 @@ function parseManual(str){
 /* =========================================================
    3) SONDAR O ACERVO: quais sequências existem?
    Testa 1,2,3… e PARA na primeira que não existir.
-   (usa Image(), que funciona mesmo sem CORS liberado)
    ========================================================= */
 function probeImage(url){
   return new Promise(res=>{
@@ -362,7 +449,7 @@ async function discoverFotos(pares, onStep){
 }
 
 /* =========================================================
-   4) DOWNLOAD
+   4) DOWNLOAD / SALVAR NA GALERIA
    ========================================================= */
 async function fetchBlob(url){
   const res = await fetch(url,{mode:"cors"});
@@ -371,6 +458,67 @@ async function fetchBlob(url){
 }
 function nameFor(url){ return url.split("/").pop(); }
 function triggerDownload(blob,filename){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);}
+
+/* --- Salvar na galeria (menu de compartilhar do celular:
+       opção "Salvar imagens" -> fototeca) --- */
+function canShareFiles(){
+  try{
+    if(!navigator.canShare || !navigator.share) return false;
+    const f = new File([new Blob(["x"],{type:"image/jpeg"})],"x.jpg",{type:"image/jpeg"});
+    return navigator.canShare({files:[f]});
+  }catch(e){ return false; }
+}
+
+function bindGalleryButton(btn, getUrls){
+  const label = btn.textContent;
+  let prepared = null;   // arquivos prontos aguardando um toque direto
+  btn.addEventListener("click", async ()=>{
+    /* 2º toque: compartilha imediatamente (gesto direto do usuário) */
+    if(prepared){
+      const files = prepared;
+      try{
+        await navigator.share({files, title:"Fotos Art Stilo"});
+        toast("Escolha “Salvar imagens” para enviar à galeria.");
+        prepared = null; btn.textContent = label;
+      }catch(e){
+        if(e.name!=="AbortError"){ toast("Não foi possível abrir o menu de compartilhar."); prepared=null; btn.textContent=label; }
+      }
+      return;
+    }
+    /* 1º toque: baixa as fotos e tenta compartilhar */
+    const urls = getUrls();
+    if(!urls.length) return;
+    btn.disabled = true;
+    const files = [];
+    for(let i=0;i<urls.length;i++){
+      btn.textContent = "Preparando "+(i+1)+"/"+urls.length+"…";
+      try{
+        const blob = await fetchBlob(urls[i]);
+        files.push(new File([blob], nameFor(urls[i]), {type: blob.type||"image/jpeg"}));
+      }catch(e){}
+    }
+    btn.disabled = false;
+    if(!files.length){
+      toast("O servidor de fotos bloqueou o acesso direto. Use o botão de baixar.");
+      btn.textContent = label; return;
+    }
+    if(navigator.canShare && !navigator.canShare({files})){
+      toast("Seu celular não aceitou tantas fotos de uma vez. Salve por produto.");
+      btn.textContent = label; return;
+    }
+    try{
+      await navigator.share({files, title:"Fotos Art Stilo"});
+      toast("Escolha “Salvar imagens” para enviar à galeria.");
+      btn.textContent = label;
+    }catch(e){
+      if(e.name==="AbortError"){ btn.textContent = label; return; }
+      /* o navegador exigiu um gesto direto: arma o 2º toque */
+      prepared = files;
+      btn.textContent = "Toque para salvar "+files.length+" foto(s)";
+      toast("Fotos prontas! Toque no botão para salvar na galeria.");
+    }
+  });
+}
 
 async function downloadProduct(prod,btn){
   const original=btn.textContent;btn.disabled=true;
@@ -406,7 +554,7 @@ async function downloadAll(btn){
     }
     btn.textContent="Compactando…";
     const content=await zip.generateAsync({type:"blob"});
-    triggerDownload(content,"art-estilo-praia-fotos-romaneio.zip");
+    triggerDownload(content,"art-stilo-fotos-romaneio.zip");
     toast("Pronto! "+ok+" foto(s) no arquivo .zip.");
   }finally{btn.disabled=false;btn.innerHTML=original;}
 }
@@ -418,18 +566,20 @@ function renderResults(produtos, textoLido){
   const comFoto  = produtos.filter(p=>p.fotos.length>0);
   const semFoto  = produtos.filter(p=>p.fotos.length===0);
   lastProducts = comFoto;
+  const shareOk = canShareFiles();
 
   const totalFotos = comFoto.reduce((s,p)=>s+p.fotos.length,0);
   $("#resultMeta").textContent = produtos.length+" produto(s) no romaneio · "+comFoto.length+" com foto no acervo";
-  $("#countLabel").textContent = totalFotos ? (totalFotos+" foto(s) disponível(is) para download") : "";
+  $("#countLabel").textContent = totalFotos ? (totalFotos+" foto(s) disponível(is)") : "";
   $("#downloadAll").style.display = totalFotos ? "inline-block" : "none";
+  $("#saveAllGallery").style.display = (totalFotos && shareOk) ? "inline-block" : "none";
 
   const grid=$("#grid");grid.innerHTML="";
   if(!comFoto.length){
     grid.innerHTML=`<div class="empty" style="grid-column:1/-1">
       <div class="ic">&#128533;</div>
       <b>Nenhuma foto foi encontrada no acervo para este romaneio.</b>
-      <p style="margin-top:6px;max-width:440px;margin-inline:auto">Confira se a foto do romaneio está nítida, ou digite os códigos manualmente na tela anterior (ex.: F001 002).</p>
+      <p style="margin-top:6px;max-width:440px;margin-inline:auto">Confira se a foto do romaneio está nítida, ou digite os códigos manualmente na tela anterior (ex.: F500 207).</p>
     </div>`;
   }else{
     comFoto.forEach(prod=>{
@@ -437,6 +587,7 @@ function renderResults(produtos, textoLido){
       const thumbsHtml = prod.fotos.length>1
         ? `<div class="thumbs">`+prod.fotos.map((u,i)=>`<img src="${u}" data-i="${i}" class="${i===0?'sel':''}" alt="foto ${i+1}">`).join("")+`</div>`
         : "";
+      const saveBtnHtml = shareOk ? `<button class="btn btn-sm btn-gold btn-save">Salvar na galeria</button>` : "";
       el.innerHTML=`
         <div class="imgbox">
           <div class="spin">Carregando…</div>
@@ -450,7 +601,10 @@ function renderResults(produtos, textoLido){
         <div class="info">
           <b>Referência ${prod.ref}</b>
           <span class="sku">Cor ${prod.cor} · ${prod.fotos.length} foto(s) no acervo</span>
-          <div class="rowb"><button class="btn btn-sm btn-dl">&#8681; Baixar ${prod.fotos.length>1?("fotos ("+prod.fotos.length+")"):"foto"}</button></div>
+          <div class="rowb">
+            ${saveBtnHtml}
+            <button class="btn btn-sm btn-dl">&#8681; Baixar</button>
+          </div>
         </div>`;
       el.querySelectorAll(".thumbs img").forEach(t=>{
         t.addEventListener("click",()=>{
@@ -459,6 +613,8 @@ function renderResults(produtos, textoLido){
           t.classList.add("sel");
         });
       });
+      const saveBtn = el.querySelector(".btn-save");
+      if(saveBtn) bindGalleryButton(saveBtn, ()=>prod.fotos);
       el.querySelector(".btn-dl").addEventListener("click",ev=>downloadProduct(prod,ev.currentTarget));
       grid.appendChild(el);
     });
@@ -525,7 +681,7 @@ $("#processBtn").addEventListener("click",async()=>{
 
 $("#manualBtn").addEventListener("click",async()=>{
   const pares=parseManual($("#manualInput").value);
-  if(!pares.length){toast("Digite no formato: B074C 337, F001 002");return;}
+  if(!pares.length){toast("Digite no formato: F500 207, F518 A07");return;}
   $("#processBtn").disabled=true;$("#manualBtn").disabled=true;
   setProgress(70,"Buscando fotos no acervo…");
   try{ await runPipeline(pares, ""); }
@@ -542,6 +698,7 @@ $("#restartBtn").addEventListener("click",()=>{
 });
 
 $("#downloadAll").addEventListener("click",e=>downloadAll(e.currentTarget));
+bindGalleryButton($("#saveAllGallery"), ()=>lastProducts.flatMap(p=>p.fotos));
 </script>
 </body>
 </html>
