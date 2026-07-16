@@ -528,20 +528,65 @@ async function probeImage(url){
   return false;
 }
 
-async function discoverFotos(pares, onStep){
-  const produtos = [];
-  for(let i=0;i<pares.length;i++){
-    const {ref,cor} = pares[i];
-    onStep && onStep(i, pares.length, ref, cor);
-    const fotos = [];
-    for(let seq=1; seq<=MAX_SEQ; seq++){
-      const url = fotoUrl(ref,cor,seq);
-      const ok = await probeImage(url);
-      if(!ok) break;                 // parou: não verifica as próximas
-      fotos.push(url);
-    }
-    produtos.push(Object.assign({}, pares[i], {fotos}));
+/* A foto existe? Pergunta primeiro ao e-commerce com um pedido
+   "HEAD" (só cabeçalhos — poucos bytes, ótimo no 4G):
+   200 = existe, 404 = NÃO existe (respostas definitivas).
+   Falha de rede/engasgo tenta de novo; em último caso usa o
+   plano B: carregar a imagem inteira da Locaweb (probeImage). */
+async function headComTempo(url, ms){
+  const ctl = new AbortController();
+  const timer = setTimeout(()=>ctl.abort(), ms);
+  try{ return await fetch(url,{method:"HEAD",mode:"cors",cache:"no-store",signal:ctl.signal}); }
+  finally{ clearTimeout(timer); }
+}
+async function existeFoto(urlVer){
+  const urlEc = urlParaBaixar(urlVer);
+  for(let t=0; t<2; t++){
+    try{
+      const res = await headComTempo(urlEc, 8000);
+      if(res.status===404) return false;
+      if(res.ok) return true;
+    }catch(e){ /* rede instável ou CORS: tenta de novo */ }
+    await new Promise(r=>setTimeout(r, 400));
   }
+  return await probeImage(urlVer);
+}
+
+/* Fotos de UM produto: verifica de 3 em 3 ao mesmo tempo
+   (mais rápido) e continua PARANDO na primeira que não existir
+   — fotos depois de um "buraco" são ignoradas, como sempre.  */
+async function descobrirProduto(ref, cor){
+  const fotos = [];
+  for(let base=1; base<=MAX_SEQ; base+=3){
+    const seqs = [base, base+1, base+2].filter(s=>s<=MAX_SEQ);
+    const existe = await Promise.all(seqs.map(s=>existeFoto(fotoUrl(ref,cor,s))));
+    let parou = false;
+    for(let k=0; k<seqs.length; k++){
+      if(existe[k]) fotos.push(fotoUrl(ref,cor,seqs[k]));
+      else{ parou = true; break; }
+    }
+    if(parou) break;
+  }
+  return fotos;
+}
+
+/* Descobre as fotos de todos os pares, com 6 produtos em
+   PARALELO. A cada produto concluído chama aoConcluir(prod, i)
+   — é isso que preenche os cartões em segundo plano.
+   "cancelada()" permite abortar se o usuário recomeçar.      */
+async function discoverFotos(pares, aoConcluir, cancelada){
+  const produtos = new Array(pares.length);
+  let idx = 0;
+  async function trabalhador(){
+    while(idx < pares.length){
+      if(cancelada && cancelada()) return;
+      const i = idx++;
+      const fotos = await descobrirProduto(pares[i].ref, pares[i].cor);
+      produtos[i] = Object.assign({}, pares[i], {fotos});
+      if(!(cancelada && cancelada())) aoConcluir && aoConcluir(produtos[i], i);
+    }
+  }
+  await Promise.all(Array.from({length:Math.min(6,pares.length)}, trabalhador));
   return produtos;
 }
 
@@ -687,6 +732,74 @@ async function downloadAll(btn){
 /* =========================================================
    5) RENDERIZAÇÃO
    ========================================================= */
+/* Cartão completo de um produto (foto, miniaturas e botões) */
+function cartaoProduto(prod, shareOk){
+  const el=document.createElement("div");el.className="prod";
+  const thumbsHtml = prod.fotos.length>1
+    ? `<div class="thumbs">`+prod.fotos.map((u,i)=>`<img src="${u}" data-i="${i}" class="${i===0?'sel':''}" alt="foto ${i+1}">`).join("")+`</div>`
+    : "";
+  const saveBtnHtml = shareOk ? `<button class="btn btn-sm btn-gold btn-save">Salvar na galeria</button>` : "";
+  el.innerHTML=`
+    <div class="imgbox">
+      <div class="spin">Carregando…</div>
+      <span class="badge">${prod.ref} · ${prod.cor}</span>
+      <span class="badge2">${prod.fotos.length} foto${prod.fotos.length>1?"s":""}</span>
+      <img class="main" loading="lazy" alt="${prod.ref} cor ${prod.cor}" src="${prod.fotos[0]}"
+           onload="this.closest('.imgbox').querySelector('.spin').style.display='none'"
+           onerror="this.closest('.imgbox').querySelector('.spin').textContent='Foto indisponível'">
+    </div>
+    ${thumbsHtml}
+    <div class="info">
+      <b>Referência ${prod.ref}</b>
+      <span class="sku">Cor ${prod.cor}${nomeDaCor(prod.cor)?" · "+nomeDaCor(prod.cor):""} · ${prod.fotos.length} foto(s) no acervo</span>
+      <div class="rowb">
+        ${saveBtnHtml}
+        <button class="btn btn-sm btn-dl">&#8681; Baixar</button>
+      </div>
+    </div>`;
+  el.querySelectorAll(".thumbs img").forEach(t=>{
+    t.addEventListener("click",()=>{
+      el.querySelector("img.main").src = prod.fotos[+t.dataset.i];
+      el.querySelectorAll(".thumbs img").forEach(x=>x.classList.remove("sel"));
+      t.classList.add("sel");
+    });
+  });
+  const saveBtn = el.querySelector(".btn-save");
+  if(saveBtn) bindGalleryButton(saveBtn, ()=>prod.fotos);
+  el.querySelector(".btn-dl").addEventListener("click",ev=>downloadProduct(prod,ev.currentTarget));
+  return el;
+}
+
+/* RESUMO IMEDIATO: assim que o romaneio é lido, mostra um
+   cartão "Procurando fotos…" para cada produto identificado.
+   As fotos vão chegando em segundo plano, produto a produto. */
+function renderBusca(pares){
+  $("#resultMeta").textContent = pares.length+" produto(s) identificados no romaneio";
+  $("#countLabel").textContent = "Buscando fotos no acervo… (0/"+pares.length+")";
+  $("#downloadAll").style.display="none";
+  $("#saveAllGallery").style.display="none";
+  $("#unmatchedBox").innerHTML="";
+  $("#readBox").innerHTML="";
+  const grid=$("#grid");grid.innerHTML="";
+  pares.forEach((p,i)=>{
+    const el=document.createElement("div");el.className="prod";el.id="busca-"+i;
+    el.innerHTML=`
+      <div class="imgbox">
+        <div class="spin">Procurando fotos…</div>
+        <span class="badge">${p.ref} · ${p.cor}</span>
+      </div>
+      <div class="info">
+        <b>Referência ${p.ref}</b>
+        <span class="sku">Cor ${p.cor}${nomeDaCor(p.cor)?" · "+nomeDaCor(p.cor):""}</span>
+      </div>`;
+    grid.appendChild(el);
+  });
+  $("#uploadView").style.display="none";
+  $("#appView").style.display="block";
+  $("#restartBtn").style.display="inline-block";
+  window.scrollTo(0,0);
+}
+
 function renderResults(produtos, textoLido){
   const comFoto  = produtos.filter(p=>p.fotos.length>0);
   const semFoto  = produtos.filter(p=>p.fotos.length===0);
@@ -710,42 +823,7 @@ function renderResults(produtos, textoLido){
       <p style="margin-top:10px;max-width:440px;margin-inline:auto">Se as fotos apareceram numa busca anterior, pode ter sido só uma <b>instabilidade da internet</b> — toque em "Enviar outro" e tente de novo.</p>
     </div>`;
   }else{
-    comFoto.forEach(prod=>{
-      const el=document.createElement("div");el.className="prod";
-      const thumbsHtml = prod.fotos.length>1
-        ? `<div class="thumbs">`+prod.fotos.map((u,i)=>`<img src="${u}" data-i="${i}" class="${i===0?'sel':''}" alt="foto ${i+1}">`).join("")+`</div>`
-        : "";
-      const saveBtnHtml = shareOk ? `<button class="btn btn-sm btn-gold btn-save">Salvar na galeria</button>` : "";
-      el.innerHTML=`
-        <div class="imgbox">
-          <div class="spin">Carregando…</div>
-          <span class="badge">${prod.ref} · ${prod.cor}</span>
-          <span class="badge2">${prod.fotos.length} foto${prod.fotos.length>1?"s":""}</span>
-          <img class="main" loading="lazy" alt="${prod.ref} cor ${prod.cor}" src="${prod.fotos[0]}"
-               onload="this.closest('.imgbox').querySelector('.spin').style.display='none'"
-               onerror="this.closest('.imgbox').querySelector('.spin').textContent='Foto indisponível'">
-        </div>
-        ${thumbsHtml}
-        <div class="info">
-          <b>Referência ${prod.ref}</b>
-          <span class="sku">Cor ${prod.cor}${nomeDaCor(prod.cor)?" · "+nomeDaCor(prod.cor):""} · ${prod.fotos.length} foto(s) no acervo</span>
-          <div class="rowb">
-            ${saveBtnHtml}
-            <button class="btn btn-sm btn-dl">&#8681; Baixar</button>
-          </div>
-        </div>`;
-      el.querySelectorAll(".thumbs img").forEach(t=>{
-        t.addEventListener("click",()=>{
-          el.querySelector("img.main").src = prod.fotos[+t.dataset.i];
-          el.querySelectorAll(".thumbs img").forEach(x=>x.classList.remove("sel"));
-          t.classList.add("sel");
-        });
-      });
-      const saveBtn = el.querySelector(".btn-save");
-      if(saveBtn) bindGalleryButton(saveBtn, ()=>prod.fotos);
-      el.querySelector(".btn-dl").addEventListener("click",ev=>downloadProduct(prod,ev.currentTarget));
-      grid.appendChild(el);
-    });
+    comFoto.forEach(prod=>{ grid.appendChild(cartaoProduto(prod, shareOk)); });
   }
 
   const ub=$("#unmatchedBox");
@@ -766,16 +844,31 @@ function renderResults(produtos, textoLido){
 /* =========================================================
    6) FLUXO / EVENTOS
    ========================================================= */
+let buscaAtual = 0;   // "Enviar outro" ou nova busca cancela a anterior
+
 async function runPipeline(pares, textoLido){
   if(!pares.length){
     toast("Não encontrei nenhuma referência + cor. Veja o texto lido ou digite manualmente.");
     renderResults([], textoLido);
     return;
   }
-  const produtos = await discoverFotos(pares,(i,total,ref,cor)=>{
-    setProgress(75 + (i/total)*24, "Buscando fotos no acervo… "+ref+" cor "+cor+" ("+(i+1)+"/"+total+")");
-  });
-  setProgress(100,"Concluído!");
+  const minhaBusca = ++buscaAtual;
+  const cancelada = ()=> minhaBusca !== buscaAtual;
+  hideProgress();
+  renderBusca(pares);                       // resumo na hora, fotos em segundo plano
+  let feitos = 0;
+  const produtos = await discoverFotos(pares, (prod, i)=>{
+    feitos++;
+    $("#countLabel").textContent = "Buscando fotos no acervo… ("+feitos+"/"+pares.length+")";
+    const el = document.getElementById("busca-"+i);
+    if(!el) return;
+    if(prod.fotos.length){ el.replaceWith(cartaoProduto(prod, canShareFiles())); }
+    else{
+      el.style.opacity=".55";
+      const s=el.querySelector(".spin"); if(s) s.textContent="Sem foto no acervo";
+    }
+  }, cancelada);
+  if(cancelada()) return;
   renderResults(escolherCandidatos(produtos), textoLido);
 }
 
@@ -821,6 +914,7 @@ $("#manualBtn").addEventListener("click",async()=>{
 });
 
 $("#restartBtn").addEventListener("click",()=>{
+  buscaAtual++;                             // cancela busca em andamento
   $("#appView").style.display="none";
   $("#uploadView").style.display="flex";
   $("#restartBtn").style.display="none";

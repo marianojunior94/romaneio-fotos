@@ -40,9 +40,17 @@ BAIXAR (zip/galeria): https://artstilo-ecommerce-production.up.railway.app/fotos
 - Referência: letras + números + letras opcionais (F500, B074C, B461)
 - Cor: 3 dígitos com zeros à esquerda (207, 002) OU letra + dígitos (A07)
 - SEQ: 1, 2, 3… até a primeira que não existir (teto MAX_SEQ=30)
-- Sondagem (probeImage): tenta até 3x por foto (falha pode ser rede instável;
-  repetições usam ?r=N para furar o cache). Motivo: em 16/07/2026 uma busca repetida
-  no celular voltou vazia por instabilidade momentânea.
+- Sondagem (existeFoto): pergunta ao e-commerce com pedido HEAD (poucos bytes,
+  resposta definitiva 200/404, 2 tentativas com timeout de 8s); só se a rede/servidor
+  falharem cai no plano B probeImage (carregar a imagem da Locaweb, 3 tentativas).
+  Motivo: em 16/07/2026 buscas repetidas no celular ora achavam tudo, ora nada —
+  carregar a imagem inteira para sondar era pesado no 4G e falha de rede virava
+  "não existe". Verifica 3 sequências por vez (descobrirProduto) e 6 produtos em
+  paralelo (discoverFotos) — busca de 5 produtos caiu de ~30s para ~2s.
+- Fluxo progressivo (renderBusca): ao ler o romaneio mostra NA HORA um cartão
+  "Procurando fotos…" por produto e vai preenchendo em segundo plano (pedido do dono
+  em 17/07/2026 para segurar o cliente sem sensação de espera). "Enviar outro" ou
+  nova busca cancela a anterior (token buscaAtual).
 - Constantes no topo do `<script>` em index.html: FOTO_BASE_VER, FOTO_BASE_BAIXAR,
   FOTO_EXT, MAX_SEQ, COR_DIGITOS, LOGO_URL, LOTE_MAX
 
