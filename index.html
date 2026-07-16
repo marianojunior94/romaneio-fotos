@@ -430,6 +430,11 @@ function extractPairs(text){
     const toks = linha.split(" ").map(cleanTok).filter(Boolean);
     for(let i=0;i<toks.length;i++){
       if(!REF_TOK.test(toks[i])) continue;
+      /* cores com letra (A07) também parecem referência; se este
+         token é um código de COR conhecido e o próximo parece
+         referência, ele é a cor (layout: cor vem ANTES da ref) —
+         deixa a próxima volta tratar a referência de verdade    */
+      if(CORES[toks[i].toUpperCase()] && i+1<toks.length && REF_TOK.test(toks[i+1])) continue;
       const ref = normRef(toks[i]);
       if(!ref) continue;
       // cor antes (não pode ser o Código, que tem 4-6 dígitos)
