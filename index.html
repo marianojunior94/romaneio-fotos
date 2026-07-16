@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Art Estilo Praia — Fotos pelo Romaneio</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.1.1/tesseract.min.js"></script>
+<style>
+  :root{
+    --ocean:#0a8ea0; --ocean-dark:#076675; --coral:#ff6f61; --sand:#f6efe3;
+    --ink:#12333a; --muted:#5c7981; --line:#e2ddd0; --white:#fff;
+    --shadow:0 10px 30px rgba(7,102,117,.12); --radius:16px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink);background:linear-gradient(160deg,#eaf7f9 0%,#f6efe3 100%);min-height:100vh;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+  header.topbar{background:var(--white);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10;box-shadow:0 2px 10px rgba(7,102,117,.05)}
+  .topbar-inner{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0}
+  .brand-row{display:flex;align-items:center;gap:12px}
+  .logo-sm{width:42px;height:42px;border-radius:50%;background:radial-gradient(circle at 30% 30%,var(--ocean),var(--ocean-dark));display:flex;align-items:center;justify-content:center;color:#fff;font-size:21px}
+  .brand-row b{font-size:16px;display:block}
+  .brand-row small{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase}
+  .btn{cursor:pointer;border:none;border-radius:12px;font-size:15px;font-weight:600;padding:13px 18px;transition:transform .05s,box-shadow .2s,background .2s,filter .2s}
+  .btn:active{transform:translateY(1px)}
+  .btn[disabled]{opacity:.55;cursor:not-allowed}
+  .btn-primary{background:var(--ocean);color:#fff;box-shadow:0 6px 16px rgba(10,142,160,.35)}
+  .btn-primary:hover{background:var(--ocean-dark)}
+  .btn-coral{background:var(--coral);color:#fff;box-shadow:0 6px 16px rgba(255,111,97,.32)}
+  .btn-coral:hover{filter:brightness(.95)}
+  .btn-ghost{background:transparent;color:var(--ocean-dark);border:1.5px solid var(--line)}
+  .btn-ghost:hover{border-color:var(--ocean);background:#f0fafc}
+
+  /* ---------- Upload ---------- */
+  #uploadView{min-height:calc(100vh - 72px);display:flex;align-items:center;justify-content:center;padding:32px 20px}
+  .panel{width:100%;max-width:560px;background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:34px 30px;border:1px solid var(--line);text-align:center}
+  .panel h1{font-size:23px;margin-bottom:6px}
+  .panel p.lead{color:var(--muted);font-size:14px;line-height:1.55;margin-bottom:22px}
+  .drop{border:2px dashed #b8d7dc;border-radius:14px;background:#f6fbfc;padding:34px 20px;cursor:pointer;transition:border-color .2s,background .2s;display:block}
+  .drop.drag{border-color:var(--ocean);background:#e9f7f9}
+  .drop .ic{font-size:40px;margin-bottom:8px}
+  .drop b{display:block;font-size:15px}
+  .drop span{display:block;font-size:13px;color:var(--muted);margin-top:4px}
+  .filechip{display:none;align-items:center;justify-content:center;gap:10px;margin-top:14px;font-size:14px;color:var(--ocean-dark);background:#eef7f8;border:1px solid var(--line);padding:10px 14px;border-radius:10px}
+  .row-btns{display:flex;flex-direction:column;gap:10px;margin-top:18px}
+  .sep{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;margin:16px 0 4px}
+  .sep:before,.sep:after{content:"";flex:1;height:1px;background:var(--line)}
+  .manual{display:flex;gap:8px;margin-top:6px}
+  .manual input{flex:1;padding:12px 13px;border:1.5px solid var(--line);border-radius:12px;font-size:14px;background:#fbfaf6}
+  .manual input:focus{outline:none;border-color:var(--ocean);box-shadow:0 0 0 3px rgba(10,142,160,.15);background:#fff}
+  .progress{display:none;margin-top:18px;text-align:left}
+  .progress .bar{height:8px;background:#e7eef0;border-radius:99px;overflow:hidden}
+  .progress .fill{height:100%;width:0;background:linear-gradient(90deg,var(--ocean),var(--coral));transition:width .3s}
+  .progress .lbl{font-size:13px;color:var(--muted);margin-top:8px}
+  .note{font-size:12px;color:var(--muted);margin-top:16px;line-height:1.5}
+
+  /* ---------- Resultados ---------- */
+  #appView{display:none}
+  .result-head{padding:24px 0 4px}
+  .result-head h2{font-size:23px}
+  .result-head .meta{color:var(--muted);font-size:14px;margin-top:4px}
+  .toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:14px 0 20px}
+  .toolbar .count{font-size:14px;color:var(--muted)}
+  .toolbar .actions{display:flex;gap:10px;flex-wrap:wrap}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px;padding-bottom:20px}
+  .prod{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column;transition:transform .15s}
+  .prod:hover{transform:translateY(-3px)}
+  .prod .imgbox{position:relative;aspect-ratio:4/5;background:#eef4f5;overflow:hidden}
+  .prod .imgbox img{width:100%;height:100%;object-fit:cover;display:block}
+  .prod .imgbox .spin{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px}
+  .badge{position:absolute;top:10px;left:10px;background:rgba(18,51,58,.82);color:#fff;font-size:11px;padding:4px 9px;border-radius:99px;letter-spacing:.5px;z-index:2}
+  .badge2{position:absolute;top:10px;right:10px;background:var(--coral);color:#fff;font-size:11px;padding:4px 9px;border-radius:99px;z-index:2}
+  .thumbs{display:flex;gap:6px;padding:10px 14px 0}
+  .thumbs img{width:44px;height:44px;object-fit:cover;border-radius:8px;border:2px solid transparent;cursor:pointer}
+  .thumbs img.sel{border-color:var(--ocean)}
+  .prod .info{padding:12px 14px 14px;display:flex;flex-direction:column;gap:8px;flex:1}
+  .prod .info b{font-size:15px;line-height:1.3}
+  .prod .info .sku{font-size:12px;color:var(--muted)}
+  .prod .info .rowb{margin-top:auto;display:flex;gap:8px}
+  .btn-sm{padding:10px 12px;font-size:13px;flex:1}
+  .btn-dl{background:var(--ocean);color:#fff}
+  .btn-dl:hover{background:var(--ocean-dark)}
+  .unmatched{background:#fff6f4;border:1px solid #ffd9d2;border-radius:12px;padding:14px 16px;margin:6px 0 26px;font-size:13px;color:#a2453b}
+  .unmatched b{color:#8a352c}
+  .readbox{margin:6px 0 40px}
+  .readbox summary{cursor:pointer;font-size:13px;color:var(--muted);user-select:none}
+  .readbox pre{white-space:pre-wrap;word-break:break-word;background:#0f2b31;color:#cfe9ec;padding:14px;border-radius:10px;font-size:12px;margin-top:10px;max-height:220px;overflow:auto}
+  .empty{text-align:center;padding:50px 20px;color:var(--muted)}
+  .empty .ic{font-size:44px;margin-bottom:10px}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(120px);background:var(--ink);color:#fff;padding:13px 20px;border-radius:12px;font-size:14px;box-shadow:var(--shadow);opacity:0;transition:transform .3s,opacity .3s;z-index:50;max-width:90vw;text-align:center}
+  .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+  footer{text-align:center;color:var(--muted);font-size:12px;padding:24px 0 40px}
+  @media(max-width:520px){.panel{padding:26px 20px}.result-head h2{font-size:20px}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <div class="brand-row">
+      <div class="logo-sm">&#127958;</div>
+      <div><b>Art Estilo Praia</b><small>Fotos pelo Romaneio</small></div>
+    </div>
+    <button class="btn btn-ghost" id="restartBtn" style="display:none">Enviar outro</button>
+  </div>
+</header>
+
+<!-- ===================== ENVIO ===================== -->
+<section id="uploadView">
+  <div class="panel">
+    <h1>Baixe as fotos pelo romaneio</h1>
+    <p class="lead">Envie a <b>foto</b> ou o <b>PDF</b> do seu romaneio. O app identifica a <b>referência</b> e o <b>código da cor</b> de cada produto e busca todas as fotos disponíveis no acervo.</p>
+
+    <label class="drop" id="drop">
+      <div class="ic">&#128228;</div>
+      <b>Toque para escolher o arquivo</b>
+      <span>ou arraste aqui — JPG, PNG ou PDF</span>
+      <input id="fileInput" type="file" accept="image/*,application/pdf,.pdf" hidden>
+    </label>
+    <div class="filechip" id="fileChip"><span id="fileName"></span></div>
+
+    <div class="row-btns">
+      <button class="btn btn-primary" id="processBtn" disabled>Ler romaneio e buscar fotos</button>
+    </div>
+
+    <div class="sep">ou digite os códigos manualmente</div>
+    <div class="manual">
+      <input id="manualInput" placeholder="Ex.: B074C 337, F001 002" autocomplete="off" spellcheck="false">
+      <button class="btn btn-primary" id="manualBtn" style="padding:12px 16px">Buscar</button>
+    </div>
+
+    <div class="progress" id="progress">
+      <div class="bar"><div class="fill" id="fill"></div></div>
+      <div class="lbl" id="progLbl">Lendo o documento…</div>
+    </div>
+
+    <p class="note">Tudo é processado no seu próprio navegador. A leitura de fotos usa reconhecimento de texto (OCR) e pode levar alguns segundos.</p>
+  </div>
+</section>
+
+<!-- ===================== RESULTADOS ===================== -->
+<section id="appView">
+  <div class="wrap">
+    <div class="result-head">
+      <h2>Fotos do seu romaneio</h2>
+      <div class="meta" id="resultMeta"></div>
+    </div>
+    <div class="toolbar">
+      <div class="count" id="countLabel"></div>
+      <div class="actions">
+        <button class="btn btn-coral" id="downloadAll">&#8681; Baixar todas (.zip)</button>
+      </div>
+    </div>
+    <div id="unmatchedBox"></div>
+    <div class="grid" id="grid"></div>
+    <div class="readbox" id="readBox"></div>
+  </div>
+  <footer>Art Estilo Praia &middot; Fotos geradas a partir do romaneio, em alta qualidade.</footer>
+</section>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   CONFIGURAÇÃO DO ACERVO DE FOTOS
+   Padrão do link:  BASE + REFERENCIA_COR-SEQUENCIA.jpg
+   Ex.: https://.../fotos/F001_002-1.jpg  (ref F001, cor 002, foto 1)
+   O app testa a sequência 1, 2, 3… e para na primeira que
+   não existir. MAX_SEQ é só um teto de segurança.
+   ========================================================= */
+const FOTO_BASE = "https://artstilo-ecommerce-production.up.railway.app/fotos/";
+const FOTO_EXT  = ".jpg";
+const MAX_SEQ   = 30;   // teto de fotos por produto
+const COR_DIGITOS = 3;  // código da cor com zeros à esquerda (002)
+
+function fotoUrl(ref, cor, seq){ return FOTO_BASE + ref + "_" + cor + "-" + seq + FOTO_EXT; }
+
+/* Romaneio de exemplo usado no botão "Buscar" manual e testes.
+   Use referências reais do seu acervo para ver fotos de verdade. */
+
+/* ---------- Configuração das bibliotecas ---------- */
+if (window.pdfjsLib) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+}
+
+/* ---------- Utilidades ---------- */
+const $ = (s)=>document.querySelector(s);
+let selectedFile = null;
+let lastProducts = [];   // [{ref, cor, fotos:[urls]}]
+
+function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("show");clearTimeout(t._tm);t._tm=setTimeout(()=>t.classList.remove("show"),2800);}
+function setProgress(pct,label){$("#progress").style.display="block";$("#fill").style.width=Math.round(pct)+"%";if(label)$("#progLbl").textContent=label;}
+function hideProgress(){$("#progress").style.display="none";$("#fill").style.width="0";}
+
+/* =========================================================
+   1) LEITURA DO DOCUMENTO (PDF texto, PDF escaneado, foto)
+   ========================================================= */
+async function readDocument(file){
+  const isPdf = file.type==="application/pdf" || /\.pdf$/i.test(file.name);
+  if(isPdf) return await readPdf(file);
+  return await ocrCanvas(file);
+}
+
+async function readPdf(file){
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({data:buf}).promise;
+  let text = "";
+  for(let i=1;i<=pdf.numPages;i++){
+    setProgress(10 + (i/pdf.numPages)*25, "Lendo página "+i+" de "+pdf.numPages+"…");
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    // Reconstrói as LINHAS da tabela agrupando os itens pela posição vertical (Y)
+    const rows = {};
+    content.items.forEach(it=>{
+      if(!it.str || !it.str.trim()) return;
+      const y = Math.round(it.transform[5]/3)*3;
+      (rows[y] = rows[y] || []).push({ x: it.transform[4], s: it.str });
+    });
+    Object.keys(rows).map(Number).sort((a,b)=>b-a).forEach(y=>{
+      text += rows[y].sort((a,b)=>a.x-b.x).map(o=>o.s).join(" ") + "\n";
+    });
+  }
+  // PDF sem texto selecionável (escaneado) -> renderiza e faz OCR
+  if(text.replace(/\s/g,"").length < 12){
+    setProgress(35, "PDF escaneado — usando reconhecimento de texto…");
+    let ocrText = "";
+    for(let i=1;i<=pdf.numPages;i++){
+      const page = await pdf.getPage(i);
+      const viewport = page.getViewport({scale:2});
+      const canvas = document.createElement("canvas");
+      canvas.width=viewport.width; canvas.height=viewport.height;
+      await page.render({canvasContext:canvas.getContext("2d"),viewport}).promise;
+      ocrText += "\n" + await ocrCanvas(canvas);
+    }
+    return ocrText;
+  }
+  return text;
+}
+
+async function ocrCanvas(source){
+  setProgress(38,"Reconhecendo o texto do romaneio…");
+  const { data } = await Tesseract.recognize(source, "por", {
+    logger:(m)=>{ if(m.status==="recognizing text") setProgress(38 + m.progress*35, "Reconhecendo texto… "+Math.round(m.progress*100)+"%"); }
+  });
+  return data.text || "";
+}
+
+/* =========================================================
+   2) EXTRAIR PARES (REFERÊNCIA, COR) DO TEXTO
+   Referência: letra(s) + números  (ex.: F001)
+   Cor: número na coluna COR (ex.: 002) — normalizado com zeros
+   Produto repetido no romaneio conta UMA vez só.
+   ========================================================= */
+function normRef(tok){
+  // aceita referências como F001, B074C, B461 (letras + números + letras opcionais)
+  // e corrige confusões comuns do OCR na parte numérica (O->0, l/I->1)
+  const m = tok.toUpperCase().match(/^([A-Z]{1,4})[\s\-_.]*([0-9OIL]{2,6})([A-Z]{0,3})$/i);
+  if(!m) return null;
+  let letras = m[1], digitos = m[2], sufixo = m[3]||"";
+  // "FO07" -> letras "F", números "007" (O lido no lugar do zero)
+  while(letras.length>1 && /[OIL]$/.test(letras)){ digitos = letras.slice(-1)+digitos; letras = letras.slice(0,-1); }
+  const num = digitos.replace(/O/g,"0").replace(/[IL]/g,"1");
+  return letras + num + sufixo;
+}
+function normCor(tok){
+  const num = tok.toUpperCase().replace(/O/g,"0").replace(/[IL]/g,"1");
+  if(!/^\d{1,4}$/.test(num)) return null;
+  return num.padStart(COR_DIGITOS,"0");
+}
+
+function extractPairs(text){
+  const linhas = text.split(/\r?\n/);
+  const pares = [];
+  const seen = new Set();
+  const add = (ref,cor)=>{
+    const key=ref+"_"+cor;
+    if(!seen.has(key)){ seen.add(key); pares.push({ref,cor}); }
+  };
+
+  /* PASSO 1 — layout do romaneio ART STILO:
+     início da linha = Código | Cor | Referência
+     Ex.: "00219 337 B074C B074C - CALCINHA ..."      */
+  const RE_LINHA = /^\s*([0-9OIl]{4,6})\s+([0-9OIl]{2,4})\s+([A-Za-z]{1,4}[0-9OIl]{2,6}[A-Za-z]{0,3})\b/;
+  for(const linha of linhas){
+    const m = linha.match(RE_LINHA);
+    if(!m) continue;
+    const ref = normRef(m[3]), cor = normCor(m[2]);
+    if(ref && cor) add(ref,cor);
+  }
+  if(pares.length) return pares;   // layout reconhecido — usa só ele
+
+  /* PASSO 2 — reserva (outros layouts): referência seguida
+     do código da cor na mesma linha. Ex.: "F001 002 ..."   */
+  const RE_REF = /\b([A-Za-z]{1,4}[\s\-_.]?[0-9OIl]{2,6}[A-Za-z]{0,3})\b/g;
+  for(const linha of linhas){
+    RE_REF.lastIndex = 0;
+    let m;
+    while((m = RE_REF.exec(linha)) !== null){
+      const ref = normRef(m[1]);
+      if(!ref) continue;
+      const resto = linha.slice(m.index + m[1].length);
+      const corM = resto.match(/\b([0-9OIl]{1,4})\b/);
+      if(!corM) continue;
+      const cor = normCor(corM[1]);
+      if(!cor) continue;
+      add(ref,cor);
+      break; // um par por linha
+    }
+  }
+  return pares;
+}
+
+/* Entrada manual: "F001 002, F003 015" */
+function parseManual(str){
+  const pares=[]; const seen=new Set();
+  const re=/([A-Za-z]{1,4}\s?\d{2,6}[A-Za-z]{0,3})[\s\-_/;:]+(\d{1,4})/g;
+  let m;
+  while((m=re.exec(str))!==null){
+    const ref=normRef(m[1].replace(/\s/g,"")), cor=normCor(m[2]);
+    if(!ref||!cor) continue;
+    const key=ref+"_"+cor;
+    if(seen.has(key)) continue;
+    seen.add(key); pares.push({ref,cor});
+  }
+  return pares;
+}
+
+/* =========================================================
+   3) SONDAR O ACERVO: quais sequências existem?
+   Testa 1,2,3… e PARA na primeira que não existir.
+   (usa Image(), que funciona mesmo sem CORS liberado)
+   ========================================================= */
+function probeImage(url){
+  return new Promise(res=>{
+    const im = new Image();
+    const timer = setTimeout(()=>{ im.src=""; res(false); }, 15000);
+    im.onload  = ()=>{ clearTimeout(timer); res(true);  };
+    im.onerror = ()=>{ clearTimeout(timer); res(false); };
+    im.src = url;
+  });
+}
+
+async function discoverFotos(pares, onStep){
+  const produtos = [];
+  for(let i=0;i<pares.length;i++){
+    const {ref,cor} = pares[i];
+    onStep && onStep(i, pares.length, ref, cor);
+    const fotos = [];
+    for(let seq=1; seq<=MAX_SEQ; seq++){
+      const url = fotoUrl(ref,cor,seq);
+      const ok = await probeImage(url);
+      if(!ok) break;                 // parou: não verifica as próximas
+      fotos.push(url);
+    }
+    produtos.push({ref, cor, fotos});
+  }
+  return produtos;
+}
+
+/* =========================================================
+   4) DOWNLOAD
+   ========================================================= */
+async function fetchBlob(url){
+  const res = await fetch(url,{mode:"cors"});
+  if(!res.ok) throw new Error("HTTP "+res.status);
+  return await res.blob();
+}
+function nameFor(url){ return url.split("/").pop(); }
+function triggerDownload(blob,filename){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);}
+
+async function downloadProduct(prod,btn){
+  const original=btn.textContent;btn.disabled=true;
+  let ok=0;
+  try{
+    for(let i=0;i<prod.fotos.length;i++){
+      btn.textContent="Baixando "+(i+1)+"/"+prod.fotos.length+"…";
+      try{
+        const blob=await fetchBlob(prod.fotos[i]);
+        triggerDownload(blob,nameFor(prod.fotos[i]));
+        ok++;
+      }catch(e){ window.open(prod.fotos[i],"_blank"); }
+    }
+    toast(ok===prod.fotos.length ? "Fotos baixadas: "+prod.ref+" cor "+prod.cor
+         : "Algumas fotos foram abertas em nova aba para salvar.");
+  }finally{btn.disabled=false;btn.textContent=original;}
+}
+
+async function downloadAll(btn){
+  const todas = lastProducts.flatMap(p=>p.fotos);
+  if(!todas.length) return;
+  const original=btn.innerHTML;btn.disabled=true;
+  try{
+    const zip=new JSZip();let ok=0;
+    for(let i=0;i<todas.length;i++){
+      btn.textContent="Preparando "+(i+1)+"/"+todas.length+"…";
+      try{const blob=await fetchBlob(todas[i]);zip.file(nameFor(todas[i]),blob);ok++;}catch(e){}
+    }
+    if(!ok){
+      toast("O download em .zip foi bloqueado pelo servidor de fotos. Baixando uma a uma…");
+      for(const p of lastProducts){ for(const u of p.fotos){ window.open(u,"_blank"); } }
+      return;
+    }
+    btn.textContent="Compactando…";
+    const content=await zip.generateAsync({type:"blob"});
+    triggerDownload(content,"art-estilo-praia-fotos-romaneio.zip");
+    toast("Pronto! "+ok+" foto(s) no arquivo .zip.");
+  }finally{btn.disabled=false;btn.innerHTML=original;}
+}
+
+/* =========================================================
+   5) RENDERIZAÇÃO
+   ========================================================= */
+function renderResults(produtos, textoLido){
+  const comFoto  = produtos.filter(p=>p.fotos.length>0);
+  const semFoto  = produtos.filter(p=>p.fotos.length===0);
+  lastProducts = comFoto;
+
+  const totalFotos = comFoto.reduce((s,p)=>s+p.fotos.length,0);
+  $("#resultMeta").textContent = produtos.length+" produto(s) no romaneio · "+comFoto.length+" com foto no acervo";
+  $("#countLabel").textContent = totalFotos ? (totalFotos+" foto(s) disponível(is) para download") : "";
+  $("#downloadAll").style.display = totalFotos ? "inline-block" : "none";
+
+  const grid=$("#grid");grid.innerHTML="";
+  if(!comFoto.length){
+    grid.innerHTML=`<div class="empty" style="grid-column:1/-1">
+      <div class="ic">&#128533;</div>
+      <b>Nenhuma foto foi encontrada no acervo para este romaneio.</b>
+      <p style="margin-top:6px;max-width:440px;margin-inline:auto">Confira se a foto do romaneio está nítida, ou digite os códigos manualmente na tela anterior (ex.: F001 002).</p>
+    </div>`;
+  }else{
+    comFoto.forEach(prod=>{
+      const el=document.createElement("div");el.className="prod";
+      const thumbsHtml = prod.fotos.length>1
+        ? `<div class="thumbs">`+prod.fotos.map((u,i)=>`<img src="${u}" data-i="${i}" class="${i===0?'sel':''}" alt="foto ${i+1}">`).join("")+`</div>`
+        : "";
+      el.innerHTML=`
+        <div class="imgbox">
+          <div class="spin">Carregando…</div>
+          <span class="badge">${prod.ref} · ${prod.cor}</span>
+          <span class="badge2">${prod.fotos.length} foto${prod.fotos.length>1?"s":""}</span>
+          <img class="main" loading="lazy" alt="${prod.ref} cor ${prod.cor}" src="${prod.fotos[0]}"
+               onload="this.closest('.imgbox').querySelector('.spin').style.display='none'"
+               onerror="this.closest('.imgbox').querySelector('.spin').textContent='Foto indisponível'">
+        </div>
+        ${thumbsHtml}
+        <div class="info">
+          <b>Referência ${prod.ref}</b>
+          <span class="sku">Cor ${prod.cor} · ${prod.fotos.length} foto(s) no acervo</span>
+          <div class="rowb"><button class="btn btn-sm btn-dl">&#8681; Baixar ${prod.fotos.length>1?("fotos ("+prod.fotos.length+")"):"foto"}</button></div>
+        </div>`;
+      el.querySelectorAll(".thumbs img").forEach(t=>{
+        t.addEventListener("click",()=>{
+          el.querySelector("img.main").src = prod.fotos[+t.dataset.i];
+          el.querySelectorAll(".thumbs img").forEach(x=>x.classList.remove("sel"));
+          t.classList.add("sel");
+        });
+      });
+      el.querySelector(".btn-dl").addEventListener("click",ev=>downloadProduct(prod,ev.currentTarget));
+      grid.appendChild(el);
+    });
+  }
+
+  const ub=$("#unmatchedBox");
+  if(semFoto.length){
+    ub.innerHTML=`<div class="unmatched"><b>Sem foto no acervo:</b> ${semFoto.map(p=>p.ref+"/"+p.cor).join(", ")}. O código pode ter sido lido errado ou as fotos ainda não foram publicadas.</div>`;
+  }else{ ub.innerHTML=""; }
+
+  $("#readBox").innerHTML = textoLido
+    ? `<details class="readbox"><summary>Ver o texto lido do romaneio</summary><pre>${textoLido.replace(/</g,"&lt;").trim()||"(vazio)"}</pre></details>`
+    : "";
+
+  $("#uploadView").style.display="none";
+  $("#appView").style.display="block";
+  $("#restartBtn").style.display="inline-block";
+  window.scrollTo(0,0);
+}
+
+/* =========================================================
+   6) FLUXO / EVENTOS
+   ========================================================= */
+async function runPipeline(pares, textoLido){
+  if(!pares.length){
+    toast("Não encontrei nenhuma referência + cor. Veja o texto lido ou digite manualmente.");
+    renderResults([], textoLido);
+    return;
+  }
+  const produtos = await discoverFotos(pares,(i,total,ref,cor)=>{
+    setProgress(75 + (i/total)*24, "Buscando fotos no acervo… "+ref+" cor "+cor+" ("+(i+1)+"/"+total+")");
+  });
+  setProgress(100,"Concluído!");
+  renderResults(produtos, textoLido);
+}
+
+function selectFile(file){
+  selectedFile=file;
+  $("#fileName").textContent=file.name;
+  $("#fileChip").style.display="flex";
+  $("#processBtn").disabled=false;
+}
+$("#fileInput").addEventListener("change",e=>{if(e.target.files[0])selectFile(e.target.files[0]);});
+
+const drop=$("#drop");
+["dragover","dragenter"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("drag");}));
+["dragleave","dragend","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove("drag");}));
+drop.addEventListener("drop",e=>{const f=e.dataTransfer.files[0];if(f){$("#fileInput").files=e.dataTransfer.files;selectFile(f);}});
+
+$("#processBtn").addEventListener("click",async()=>{
+  if(!selectedFile)return;
+  $("#processBtn").disabled=true;$("#manualBtn").disabled=true;
+  setProgress(5,"Abrindo o documento…");
+  try{
+    const text=await readDocument(selectedFile);
+    await runPipeline(extractPairs(text), text);
+  }catch(err){
+    toast("Não consegui ler este arquivo. Tente uma foto mais nítida ou um PDF válido.");
+    console.error(err);
+  }finally{
+    $("#processBtn").disabled=false;$("#manualBtn").disabled=false;hideProgress();
+  }
+});
+
+$("#manualBtn").addEventListener("click",async()=>{
+  const pares=parseManual($("#manualInput").value);
+  if(!pares.length){toast("Digite no formato: B074C 337, F001 002");return;}
+  $("#processBtn").disabled=true;$("#manualBtn").disabled=true;
+  setProgress(70,"Buscando fotos no acervo…");
+  try{ await runPipeline(pares, ""); }
+  finally{ $("#processBtn").disabled=false;$("#manualBtn").disabled=false;hideProgress(); }
+});
+
+$("#restartBtn").addEventListener("click",()=>{
+  $("#appView").style.display="none";
+  $("#uploadView").style.display="flex";
+  $("#restartBtn").style.display="none";
+  selectedFile=null;$("#fileInput").value="";$("#fileChip").style.display="none";
+  $("#processBtn").disabled=true;hideProgress();
+  window.scrollTo(0,0);
+});
+
+$("#downloadAll").addEventListener("click",e=>downloadAll(e.currentTarget));
+</script>
+</body>
+</html>
