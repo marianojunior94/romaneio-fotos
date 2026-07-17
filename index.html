@@ -125,6 +125,15 @@
   .readbox pre{white-space:pre-wrap;word-break:break-word;background:#0f2b31;color:#cfe9ec;padding:14px;border-radius:12px;font-size:12px;margin-top:10px;max-height:220px;overflow:auto}
   .empty{text-align:center;padding:50px 20px;color:var(--muted)}
   .empty .ic{font-size:44px;margin-bottom:10px}
+  .prod{position:relative}
+  .btn-x{position:absolute;top:-9px;right:-9px;z-index:3;width:30px;height:30px;border-radius:50%;
+    border:none;background:#fff;color:#a2453b;box-shadow:0 3px 10px rgba(0,0,0,.28);
+    font-size:14px;line-height:1;cursor:pointer;font-family:inherit}
+  .btn-x:hover{background:#ffece8}
+  .addbar{display:flex;gap:8px;margin:0 0 18px}
+  .addbar input{flex:1;padding:11px 14px;border:1.5px solid var(--line);border-radius:999px;
+    font-size:14px;background:#fbfaf6;font-family:inherit;min-width:0}
+  .addbar input:focus{outline:none;border-color:var(--ocean);box-shadow:0 0 0 3px rgba(14,134,145,.15);background:#fff}
 
   .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(120px);background:var(--ink);color:#fff;padding:13px 20px;border-radius:14px;font-size:14px;box-shadow:var(--shadow);opacity:0;transition:transform .3s,opacity .3s;z-index:50;max-width:90vw;text-align:center}
   .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
@@ -206,6 +215,10 @@
         <button class="btn btn-gold" id="saveAllGallery" style="display:none">Salvar todas na galeria</button>
         <button class="btn btn-coral" id="downloadAll">&#8681; Baixar todas (.zip)</button>
       </div>
+    </div>
+    <div class="addbar">
+      <input id="addInput" placeholder="Faltou algum? Ex.: F518 A07 ou F518 bronzeada" autocomplete="off" spellcheck="false">
+      <button class="btn btn-ghost" id="addBtn">+ Adicionar</button>
     </div>
     <div id="unmatchedBox"></div>
     <div class="grid" id="grid"></div>
@@ -312,17 +325,17 @@ function hideProgress(){$("#progress").style.display="none";$("#fill").style.wid
 /* =========================================================
    1) LEITURA DO DOCUMENTO (PDF texto, PDF escaneado, foto)
    ========================================================= */
-async function readDocument(file){
+async function readDocument(file, opcoes){
   const isPdf = file.type==="application/pdf" || /\.pdf$/i.test(file.name);
-  if(isPdf) return await readPdf(file);
-  return await ocrCanvas(file);
+  if(isPdf) return await readPdf(file, opcoes);
+  return await ocrCanvas(file, opcoes);
 }
 
 /* readPdf e ocrCanvas devolvem {texto, linhas}:
    - texto: o texto corrido (para o fallback e o "texto lido")
    - linhas: as linhas com a POSIÇÃO X de cada palavra na página,
      usadas pela leitura POR COLUNAS (passo 0 do extractPairs)  */
-async function readPdf(file){
+async function readPdf(file, opcoes){
   const buf = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({data:buf}).promise;
   let text = ""; const linhas = [];
@@ -362,7 +375,7 @@ async function readPdf(file){
       const canvas = document.createElement("canvas");
       canvas.width=viewport.width; canvas.height=viewport.height;
       await page.render({canvasContext:canvas.getContext("2d"),viewport}).promise;
-      const r = await ocrCanvas(canvas);
+      const r = await ocrCanvas(canvas, opcoes);
       ocrText += "\n" + r.texto;
       ocrLinhas.push(...r.linhas);
     }
@@ -440,9 +453,10 @@ function limparBordas(canvas){
   return canvas;
 }
 
-async function ocrCanvas(source){
+async function ocrCanvas(source, opcoes){
   setProgress(36,"Preparando a imagem…");
-  source = limparBordas(await paraCanvas(source));
+  source = await paraCanvas(source);
+  if(!(opcoes && opcoes.semLimpeza)) source = limparBordas(source);
   setProgress(38,"Reconhecendo o texto do romaneio…");
   const { data } = await Tesseract.recognize(source, "por", {
     logger:(m)=>{ if(m.status==="recognizing text") setProgress(38 + m.progress*35, "Reconhecendo texto… "+Math.round(m.progress*100)+"%"); }
@@ -957,6 +971,37 @@ async function downloadAll(btn){
 /* =========================================================
    5) RENDERIZAÇÃO
    ========================================================= */
+/* CONFERÊNCIA COM O USUÁRIO: cada cartão tem um ✕ para tirar
+   da lista o que a leitura pegou errado (ex.: código inventado
+   pelo OCR). O que foi removido não entra no zip/salvar-todas. */
+let removidos = new Set();
+let ultimosSemFoto = [];
+function chaveProd(p){ return p.ref+"_"+p.cor; }
+function renderAvisoSemFoto(){
+  const ub=$("#unmatchedBox");
+  if(ultimosSemFoto.length){
+    ub.innerHTML=`<div class="unmatched"><b>Sem foto no acervo:</b> ${ultimosSemFoto.map(p=>p.ref+"/"+p.cor+(nomeDaCor(p.cor)?" ("+nomeDaCor(p.cor)+")":"")).join(", ")}. O código pode ter sido lido errado ou as fotos ainda não foram publicadas.</div>`;
+  }else{ ub.innerHTML=""; }
+}
+function marcarRemovido(prod, el){
+  removidos.add(chaveProd(prod));
+  el.remove();
+  lastProducts = lastProducts.filter(p=>chaveProd(p)!==chaveProd(prod));
+  ultimosSemFoto = ultimosSemFoto.filter(p=>chaveProd(p)!==chaveProd(prod));
+  renderAvisoSemFoto();
+  const totalFotos = lastProducts.reduce((s,p)=>s+p.fotos.length,0);
+  $("#countLabel").textContent = totalFotos ? (totalFotos+" foto(s) disponível(is)") : "";
+  $("#downloadAll").style.display = totalFotos ? "inline-block" : "none";
+  $("#saveAllGallery").style.display = (totalFotos && canShareFiles()) ? "inline-block" : "none";
+  toast("Removido: "+prod.ref+" cor "+prod.cor);
+}
+function botaoX(prod){
+  const b=document.createElement("button");
+  b.className="btn-x"; b.title="Não é do meu romaneio"; b.innerHTML="&#10005;";
+  b.addEventListener("click",ev=>{ ev.stopPropagation(); marcarRemovido(prod, ev.currentTarget.closest(".prod")); });
+  return b;
+}
+
 /* Cartão completo de um produto (foto, miniaturas e botões) */
 function cartaoProduto(prod, shareOk){
   const el=document.createElement("div");el.className="prod";
@@ -992,6 +1037,7 @@ function cartaoProduto(prod, shareOk){
   const saveBtn = el.querySelector(".btn-save");
   if(saveBtn) bindGalleryButton(saveBtn, ()=>prod.fotos);
   el.querySelector(".btn-dl").addEventListener("click",ev=>downloadProduct(prod,ev.currentTarget));
+  el.appendChild(botaoX(prod));
   return el;
 }
 
@@ -1014,6 +1060,7 @@ function cartaoSemFoto(prod, shareOk){
     </div>`;
   el.querySelector(".btn-outras").addEventListener("click",
     ev=>procurarOutrasCores(prod, el, ev.currentTarget, shareOk));
+  el.appendChild(botaoX(prod));
   return el;
 }
 
@@ -1060,7 +1107,7 @@ async function procurarOutrasCores(prod, el, btn, shareOk){
    cartão "Procurando fotos…" para cada produto identificado.
    As fotos vão chegando em segundo plano, produto a produto. */
 function renderBusca(pares){
-  $("#resultMeta").textContent = pares.length+" produto(s) identificados no romaneio";
+  $("#resultMeta").textContent = pares.length+" produto(s) identificados — confira e toque no ✕ se algum estiver errado";
   $("#countLabel").textContent = "Buscando fotos no acervo… (0/"+pares.length+")";
   $("#downloadAll").style.display="none";
   $("#saveAllGallery").style.display="none";
@@ -1078,6 +1125,7 @@ function renderBusca(pares){
         <b>Referência ${p.ref}</b>
         <span class="sku">Cor ${p.cor}${nomeDaCor(p.cor)?" · "+nomeDaCor(p.cor):""}</span>
       </div>`;
+    el.appendChild(botaoX(p));
     grid.appendChild(el);
   });
   $("#uploadView").style.display="none";
@@ -1115,10 +1163,8 @@ function renderResults(produtos, textoLido){
      "Procurar outras cores" — o produto pode ter foto em outra cor */
   semFoto.forEach(prod=>{ grid.appendChild(cartaoSemFoto(prod, shareOk)); });
 
-  const ub=$("#unmatchedBox");
-  if(semFoto.length){
-    ub.innerHTML=`<div class="unmatched"><b>Sem foto no acervo:</b> ${semFoto.map(p=>p.ref+"/"+p.cor+(nomeDaCor(p.cor)?" ("+nomeDaCor(p.cor)+")":"")).join(", ")}. O código pode ter sido lido errado ou as fotos ainda não foram publicadas.</div>`;
-  }else{ ub.innerHTML=""; }
+  ultimosSemFoto = semFoto.slice();
+  renderAvisoSemFoto();
 
   $("#readBox").innerHTML = textoLido
     ? `<details class="readbox"><summary>Ver o texto lido do romaneio</summary><pre>${textoLido.replace(/</g,"&lt;").trim()||"(vazio)"}</pre></details>`
@@ -1143,6 +1189,7 @@ async function runPipeline(pares, textoLido){
   }
   const minhaBusca = ++buscaAtual;
   const cancelada = ()=> minhaBusca !== buscaAtual;
+  removidos = new Set();
   hideProgress();
   pares = expandirCores(pares);             // testa também códigos "irmãos" (mesmo nome)
   renderBusca(pares);                       // resumo na hora, fotos em segundo plano
@@ -1151,7 +1198,7 @@ async function runPipeline(pares, textoLido){
     feitos++;
     $("#countLabel").textContent = "Buscando fotos no acervo… ("+feitos+"/"+pares.length+")";
     const el = document.getElementById("busca-"+i);
-    if(!el) return;
+    if(!el || removidos.has(chaveProd(prod))) return;
     if(prod.fotos.length){ el.replaceWith(cartaoProduto(prod, canShareFiles())); }
     else{
       el.style.opacity=".55";
@@ -1159,7 +1206,7 @@ async function runPipeline(pares, textoLido){
     }
   }, cancelada);
   if(cancelada()) return;
-  renderResults(escolherCandidatos(produtos), textoLido);
+  renderResults(escolherCandidatos(produtos).filter(p=>!removidos.has(chaveProd(p))), textoLido);
 }
 
 function selectFile(file){
@@ -1180,8 +1227,18 @@ $("#processBtn").addEventListener("click",async()=>{
   $("#processBtn").disabled=true;$("#manualBtn").disabled=true;
   setProgress(5,"Abrindo o documento…");
   try{
-    const doc=await readDocument(selectedFile);
-    await runPipeline(extractPairs(doc.texto, doc.linhas), doc.texto);
+    const isPdf = selectedFile.type==="application/pdf" || /\.pdf$/i.test(selectedFile.name);
+    let doc = await readDocument(selectedFile);
+    let pares = extractPairs(doc.texto, doc.linhas);
+    /* foto difícil: tenta uma 2ª leitura SEM a limpeza de bordas
+       (em algumas fotos a limpeza pode apagar demais)          */
+    if(!pares.length && !isPdf){
+      setProgress(72,"Tentando uma segunda leitura…");
+      const doc2 = await readDocument(selectedFile, {semLimpeza:true});
+      const pares2 = extractPairs(doc2.texto, doc2.linhas);
+      if(pares2.length){ doc=doc2; pares=pares2; }
+    }
+    await runPipeline(pares, doc.texto);
   }catch(err){
     toast("Não consegui ler este arquivo. Tente uma foto mais nítida ou um PDF válido.");
     console.error(err);
@@ -1202,6 +1259,57 @@ $("#manualBtn").addEventListener("click",async()=>{
   try{ await runPipeline(pares, ""); }
   finally{ $("#processBtn").disabled=false;$("#manualBtn").disabled=false;hideProgress(); }
 });
+
+/* "+ Adicionar": inclui um produto que a leitura perdeu.
+   Busca as fotos na hora e insere o cartão no TOPO da lista. */
+$("#addBtn").addEventListener("click", async ()=>{
+  const {pares,avisos}=parseManual($("#addInput").value);
+  if(avisos.length) toast(avisos[0]);
+  if(!pares.length){
+    if(!avisos.length) toast("Digite no formato: F518 A07 ou F518 bronzeada");
+    return;
+  }
+  $("#addInput").value="";
+  const novos = expandirCores(pares).filter(p=>{
+    const k=chaveProd(p);
+    if(removidos.has(k)) removidos.delete(k);
+    return !lastProducts.some(q=>chaveProd(q)===k);
+  });
+  if(!novos.length){ toast("Esse produto já está na lista."); return; }
+  const grid=$("#grid");
+  const marcadores = novos.map(p=>{
+    const el=document.createElement("div"); el.className="prod";
+    el.innerHTML=`<div class="imgbox"><div class="spin">Procurando fotos…</div>
+      <span class="badge">${p.ref} · ${p.cor}</span></div>
+      <div class="info"><b>Referência ${p.ref}</b>
+      <span class="sku">Cor ${p.cor}${nomeDaCor(p.cor)?" · "+nomeDaCor(p.cor):""}</span></div>`;
+    grid.insertBefore(el, grid.firstChild);
+    return el;
+  });
+  $("#addBtn").disabled=true;
+  try{
+    const produtos = await discoverFotos(novos);
+    const finais = escolherCandidatos(produtos).filter(p=>!removidos.has(chaveProd(p)));
+    marcadores.forEach(el=>el.remove());
+    const shareOk=canShareFiles();
+    finais.slice().reverse().forEach(prod=>{
+      const el = prod.fotos.length ? cartaoProduto(prod, shareOk) : cartaoSemFoto(prod, shareOk);
+      grid.insertBefore(el, grid.firstChild);
+      if(prod.fotos.length) lastProducts.push(prod);
+    });
+    const totalFotos = lastProducts.reduce((s,p)=>s+p.fotos.length,0);
+    $("#countLabel").textContent = totalFotos ? (totalFotos+" foto(s) disponível(is)") : "";
+    $("#downloadAll").style.display = totalFotos ? "inline-block" : "none";
+    $("#saveAllGallery").style.display = (totalFotos && shareOk) ? "inline-block" : "none";
+    const vazio=document.querySelector("#grid .empty");
+    if(vazio && lastProducts.length) vazio.remove();
+    finais.filter(p=>!p.fotos.length).forEach(p=>ultimosSemFoto.push(p));
+    renderAvisoSemFoto();
+    const comFoto=finais.filter(p=>p.fotos.length).length;
+    toast(comFoto ? "Adicionado! "+comFoto+" produto(s) com foto." : "Adicionado, mas sem foto no acervo.");
+  }finally{ $("#addBtn").disabled=false; }
+});
+$("#addInput").addEventListener("keydown",e=>{ if(e.key==="Enter") $("#addBtn").click(); });
 
 $("#restartBtn").addEventListener("click",()=>{
   buscaAtual++;                             // cancela busca em andamento

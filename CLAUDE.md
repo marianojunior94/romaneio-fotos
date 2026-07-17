@@ -51,6 +51,15 @@ BAIXAR (zip/galeria): https://artstilo-ecommerce-production.up.railway.app/fotos
   "Procurando fotos…" por produto e vai preenchendo em segundo plano (pedido do dono
   em 17/07/2026 para segurar o cliente sem sensação de espera). "Enviar outro" ou
   nova busca cancela a anterior (token buscaAtual).
+- CONFERÊNCIA pelo usuário (17/07/2026, pedido do dono — OCR de foto nunca é 100%):
+  cada cartão tem um ✕ ("não é do meu romaneio", conjunto removidos + marcarRemovido)
+  que tira o produto da tela, do zip e do aviso sem-foto; e a barra "+ Adicionar"
+  (addBar/addBtn) inclui produto que a leitura perdeu (aceita código ou nome de cor),
+  buscando as fotos na hora e inserindo o cartão no topo. Caso real: OCR inventou
+  "MB160" e perdeu o F518/A07 do romaneio da Karen (R57253).
+- Segunda leitura automática (17/07/2026): se a foto render ZERO pares, o app refaz
+  o OCR sem a limpeza de bordas (opção {semLimpeza:true} em readDocument/ocrCanvas) —
+  em algumas fotos a limpeza pode apagar demais.
 - Outras cores do mesmo produto (17/07/2026): um produto costuma ter foto em POUCAS
   cores (F500 só tem em 002, 207, A40 e A71 — verificado por varredura completa).
   Duas defesas: (1) expandirCores() testa automaticamente códigos "irmãos" com o
