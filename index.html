@@ -198,7 +198,7 @@
       </div>
     </div>
 
-    <p class="note">Tudo é processado no seu próprio navegador. A leitura de fotos usa reconhecimento de texto (OCR) e pode levar alguns segundos.</p>
+    <p class="note">A foto do romaneio é lida com inteligência artificial, com segurança. Se a leitura inteligente estiver indisponível, o app lê no seu próprio navegador (pode levar alguns segundos a mais).</p>
   </div>
 </section>
 
@@ -1222,12 +1222,57 @@ const drop=$("#drop");
 ["dragleave","dragend","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove("drag");}));
 drop.addEventListener("drop",e=>{const f=e.dataTransfer.files[0];if(f){$("#fileInput").files=e.dataTransfer.files;selectFile(f);}});
 
+/* LEITURA INTELIGENTE: manda a foto para o nosso servidor, que
+   pede ao Claude (Anthropic) para ler a tabela do romaneio.
+   Entende colunas, ignora preços e lê fotos tortas/borradas.
+   Se o servidor não responder (sem chave, sem internet), devolve
+   null e o app cai no leitor local (OCR) — plano B automático. */
+async function lerViaIA(file){
+  try{
+    const cv = await paraCanvas(file);                 // ajusta o tamanho da foto
+    const base64 = cv.toDataURL("image/jpeg", 0.85).split(",")[1];
+    const ctl = new AbortController();
+    const timer = setTimeout(()=>ctl.abort(), 45000);
+    const res = await fetch("/ler-romaneio", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ imagem: base64, tipo: "image/jpeg" }),
+      signal: ctl.signal,
+    });
+    clearTimeout(timer);
+    if(!res.ok) return null;
+    const dados = await res.json();
+    if(!dados || !Array.isArray(dados.pares)) return null;
+    const pares=[]; const seen=new Set();
+    dados.pares.forEach(p=>{
+      const ref = normRef(String(p.referencia||"").trim());
+      const cor = normCor(String(p.cor||"").trim());
+      if(!ref || !cor) return;
+      const k=ref+"_"+cor;
+      if(seen.has(k)) return;
+      seen.add(k); pares.push({ref, cor});
+    });
+    return pares.length ? pares : null;
+  }catch(e){ return null; }
+}
+
 $("#processBtn").addEventListener("click",async()=>{
   if(!selectedFile)return;
   $("#processBtn").disabled=true;$("#manualBtn").disabled=true;
   setProgress(5,"Abrindo o documento…");
   try{
     const isPdf = selectedFile.type==="application/pdf" || /\.pdf$/i.test(selectedFile.name);
+    /* FOTO: primeiro a leitura inteligente (Claude);
+       PDF com texto já é 100% preciso no leitor local */
+    if(!isPdf){
+      setProgress(20,"Lendo o romaneio com inteligência artificial…");
+      const paresIA = await lerViaIA(selectedFile);
+      if(paresIA){
+        await runPipeline(paresIA, "");
+        return;
+      }
+      setProgress(30,"Usando o leitor local…");
+    }
     let doc = await readDocument(selectedFile);
     let pares = extractPairs(doc.texto, doc.linhas);
     /* foto difícil: tenta uma 2ª leitura SEM a limpeza de bordas

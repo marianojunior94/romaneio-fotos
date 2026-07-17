@@ -8,7 +8,8 @@ não-programador — explique as coisas em linguagem simples, sem jargão, sempr
 
 ## O que é o app
 
-Um app web de **um único arquivo** (`index.html`, sem backend) para as revendedoras da ART STILO:
+Um app web (`index.html` + um servidor mínimo `server.js` para a leitura por IA)
+para as revendedoras da ART STILO:
 
 1. A revendedora envia a **foto ou o PDF do romaneio** (ou digita os códigos manualmente).
 2. O app lê o documento no navegador (PDF com texto via pdf.js; foto/PDF escaneado via
@@ -104,10 +105,26 @@ BAIXAR (zip/galeria): https://artstilo-ecommerce-production.up.railway.app/fotos
 - Testado com 2 romaneios reais: PDF do Getúlio (24 pares únicos, ref B074C etc.) e foto do
   romaneio da Karen (6 pares, incluindo cor A07). Não quebrar esses casos ao mexer no parser.
 
+## Leitura INTELIGENTE da foto (API Anthropic, 17/07/2026)
+
+- server.js (Express) passou a servir o app e expõe POST /ler-romaneio: recebe a
+  foto em base64, chama o Claude (MODELO_LEITURA = claude-haiku-4-5, ~US$0,005
+  por romaneio; structured outputs garantem o JSON {produtos:[{referencia,cor}]})
+  e devolve os pares. A chave fica APENAS na variável ANTHROPIC_API_KEY do
+  Railway (o dono cadastra; nunca no repositório ou no site).
+- No app, lerViaIA() roda ANTES do OCR para fotos (PDF com texto continua no
+  leitor local, que é 100%): redimensiona com paraCanvas, manda JPEG 85%,
+  timeout 45s. Falhou/sem chave (503) → cai no OCR local sem o usuário notar.
+- A tela de conferência (✕ / + Adicionar) vale para as duas leituras.
+- npm: express + @anthropic-ai/sdk; start = node server.js; .gitignore cobre
+  node_modules/.env/.claude.
+
 ## Deploy
 
-- GitHub: repositório `romaneio-fotos` do dono (index.html + package.json).
+- GitHub: repositório `romaneio-fotos` do dono (index.html + server.js + package.json).
 - Railway: serviço conectado ao repositório, redeploya sozinho a cada push.
+  Variável de ambiente necessária: ANTHROPIC_API_KEY (leitura inteligente;
+  sem ela o app funciona só com OCR local).
   Domínio gerado pelo Railway (tipo `romaneio-fotos-production.up.railway.app`).
 - O servidor de fotos é OUTRO app do Railway (o e-commerce). Como são domínios diferentes,
   o zip/galeria dependem de CORS liberado na rota `/fotos` do e-commerce:
@@ -160,7 +177,9 @@ BAIXAR (zip/galeria): https://artstilo-ecommerce-production.up.railway.app/fotos
 
 ## Como trabalhar neste projeto
 
-- Sempre manter TUDO em um único index.html (CSS e JS inline) — decisão do dono.
+- Manter o APP em um único index.html (CSS e JS inline) — decisão do dono.
+  Exceção acordada em 17/07/2026: server.js existe só para servir o site e
+  guardar a chamada à API Anthropic (a chave não pode ficar no navegador).
 - Depois de qualquer mudança no parser, testar mentalmente (ou com script) contra os dois
   layouts reais descritos acima.
 - Após editar, commitar e dar push — o Railway publica sozinho. Em 17/07/2026 o dono
